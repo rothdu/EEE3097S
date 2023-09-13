@@ -1,22 +1,58 @@
 {
-    "frequency": 500, 
+    "frequency": 280,
     
-    "mics":
+    "points":{
+        "random": true
+    },
+    
+    "tests": 
     [
-        [0, 0],
-        [100, 0],
-        [0, 100],
-        [50, 0]
-    ],
+        {
+            "frequency": {
+                "global": true
+            }, 
+            
+            "mics": 
+            {
+                "reference": [0,0],
+            
 
-    "points":
-    {
-        "random": true, 
-        "random_count": 10,
-        "points": 
-        [
+                "other": 
+                [
+                    [0.8, 0],
+                    [0, 0.5],
+                    [0.8, 0.5]
+                ]
 
-        ]
+            },
 
-    }
+            "points": {
+                "global": true
+            }
+        },
+
+        {
+            "frequency": {
+                "global": true
+            }, 
+            
+            "mics": 
+            {
+                "reference": [0,0],
+            
+
+                "other": 
+                [
+                    [0.2, 0],
+                    [0.6, 0],
+                    [0.8, 0]
+                ]
+
+            },
+
+            "points": {
+                "global": true
+            }
+        },       
+    ]
 }
