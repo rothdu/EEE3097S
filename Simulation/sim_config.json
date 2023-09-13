@@ -1,11 +1,16 @@
 {
     "frequency": {
+        "global": true,
         "value": 280
     },
     "points": {
+        "global": true,
         "random": true,
         "number": 10,
         "points": []
+    },
+    "mics": {
+        "global": true
     },
     "tests": [
         {
