@@ -72,7 +72,7 @@ def gen_gaussian_n(duration, sample_rate):
 def gen_sig(duration, sample_rate):
     # Parameters for the sine wave
     amplitude = 6.0
-    frequency = 1000.0
+    frequency = 280.0
 
     # Generate a time array
     t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
