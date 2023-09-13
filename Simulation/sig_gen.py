@@ -18,17 +18,17 @@ def generate_signal(test_location, mic_location, signal_frequency, sample_freque
     # wavelength of sinusoidal input
 
     samples_per_wavelength = sample_frequency/signal_frequency
-    sample_offset = int((1 - distance%wavelength)/wavelength * samples_per_wavelength)
+    sample_offset = int((distance%wavelength)/wavelength * samples_per_wavelength)
     # phase difference to place in mic location
-
+    print(signal)
     signal = np.roll(signal, sample_offset)
-
+    print(signal)
     return signal
 
 def signal_to_16_bit(signal, proportion = 0.5):
     
     # find max value of input signal
-    max_height = np.maximum(np.abs(signal))
+    max_height = np.max(np.abs(signal))
 
     # lambda function to convert array
     convert = lambda x: ( proportion * np.power(2, 15) / max_height ) * x

@@ -37,7 +37,7 @@ def gcc_phat_2(signal1, signal2, fs):
 
 
     ##### test plots
-
+    """
     fig1 = plt.figure(1)
 
     ax1 = fig1.add_subplot()
@@ -77,7 +77,7 @@ def gcc_phat_2(signal1, signal2, fs):
     plt.show()
     plt.close()
 
-
+    """
 
 
     return tdoa

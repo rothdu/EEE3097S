@@ -30,11 +30,8 @@ def main():
 
             # generate unique signal for each mic
             for mic_loc in test["mics"]["mics"]:
-                signals.append(sig_gen.generate_signal(point, mic_loc, test["frequency"]["value"], amplitude=6, sample_length=1))
-            
-            # convert to an equivalent wav file
-            for signal in signals:
-                signal = sig_gen.signal_to_16_bit(signal)
+                signals.append(sig_gen.generate_signal(point, mic_loc, test["frequency"]["value"], amplitude=6))
+        
 
             
             # initialise list to store tdoas
@@ -42,8 +39,7 @@ def main():
 
             # use gcc-phat on pairs of signals, using first signal as reference
             for i in range(1, len(signals)):
-                #tau = gcc_phat.gcc_phat_2(signals[i], signals[0], fs=44100)
-                tau = pyroomacoustics.experimental.localization.tdoa(signals[0], signals[i])
+                tau = pyroomacoustics.experimental.localization.tdoa(signals[0], signals[i], fs=44100)
                 tdoas.append(tau)
 
 
