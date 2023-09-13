@@ -4,7 +4,7 @@ import scipy.constants as constant
 
 import matplotlib.pyplot as plt # for testing
 
-def generate_signal(test_location, mic_location, signal_frequency, sample_frequency, sample_length, amplitude):
+def generate_signal(test_location, mic_location, signal_frequency, sample_frequency, sample_length, amplitude=1):
 
     distance = np.sqrt(np.power(test_location[0] - mic_location[0], 2) + np.power(test_location[1] - mic_location[1], 2))
     # distance from test loc to mic loc
