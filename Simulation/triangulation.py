@@ -14,7 +14,7 @@ from numpy import arange, meshgrid, sqrt
 # 
 #   The helper mic coords and constant can be in any order as long as their x, y and ct correspond
 #   
-#   Returns and xe and ye of the estimated source position.
+#   Returns xe,ye,x,y,h1,h2,h3: estimated source position, base meshgrid, hyperbolic meshgrid for each mic pair
 
 def triangulate(param):
 
