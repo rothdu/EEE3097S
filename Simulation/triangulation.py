@@ -53,7 +53,8 @@ def main():
     t3 = 40*sqrt(2)-20*sqrt(13)
 
     param = [0,0,0,100,t1,100,100,t2,100,0,t3]
-    xe, ye, x, y, h1, h2, h3 = triangulate(param)
+    mesh = [1,0,100,0,100]
+    xe, ye, x, y, h1, h2, h3 = triangulate(param,mesh)
     
     plt.contour(x,y,h1,[0])
     plt.contour(x,y,h2,[0])
