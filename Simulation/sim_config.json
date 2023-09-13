@@ -7,7 +7,12 @@
         "global": true,
         "random": true,
         "number": 10,
-        "points": []
+        "points": [
+            [
+                0.6, 
+                0.3
+            ]
+        ]
     },
     "mics": {
         "global": true

@@ -6,23 +6,22 @@ import matplotlib.pyplot as plt # for testing
 
 def generate_signal(test_location, mic_location, signal_frequency, sample_frequency = 44100, sample_length = 10e-3, amplitude=1):
 
+    time = np.linspace(0, sample_length, int(sample_length*sample_frequency))
+    # create signal, initially fill array with time values
+    
+    signal = amplitude * np.sin(2*np.pi*signal_frequency*time)
+
     distance = np.sqrt(np.power(test_location[0] - mic_location[0], 2) + np.power(test_location[1] - mic_location[1], 2))
     # distance from test loc to mic loc
 
     wavelength = constant.speed_of_sound/signal_frequency
     # wavelength of sinusoidal input
 
-    phase_offset = (distance%wavelength)/wavelength*2*np.pi
+    samples_per_wavelength = sample_frequency/signal_frequency
+    sample_offset = int((1 - distance%wavelength)/wavelength * samples_per_wavelength)
     # phase difference to place in mic location
 
-    signal = np.linspace(0, sample_length, int(sample_length*sample_frequency))
-    # create signal, initially fill array with time values
-
-    siggen = lambda t: amplitude * np.sin(2*np.pi*signal_frequency*t - phase_offset)
-    # lambda function to populate array
-
-    signal = siggen(signal)
-    # generate sinusoidal signal
+    signal = np.roll(signal, sample_offset)
 
     return signal
 
