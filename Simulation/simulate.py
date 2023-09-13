@@ -1,6 +1,8 @@
 import json
 import random
+import matplotlib.pyplot as plt
 
+import gcc_phat, gui, sig_gen, signal_procesing, triangulation
 
 def main():
     with open("Simulation/sim_config.json", "r") as read_file:
@@ -16,9 +18,27 @@ def main():
         for key in test:
             populate_test_from_global(config, test, key)
 
-    
-    with open("config_edit_test.json", "w") as write_file:
-        json.dump(config, write_file)
+        for point in test["points"]["points"]:
+            
+
+
+            signals = []
+
+            for mic_loc in test["mics"]["mics"]:
+                signals.append(sig_gen.generate_signal(point, mic_loc, test["frequency"]["value"], amplitude=6))
+            
+            tdoas = []
+
+            for i in range(len(signals)-1):
+                tau, cc = gcc_phat.gcc_phat(signals[i+1], signals[0], 44100)
+                tdoas.append(tau)
+
+            print(tdoas)
+
+            
+
+
+
 
 
         
