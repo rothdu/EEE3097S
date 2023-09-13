@@ -4,7 +4,7 @@ import scipy.constants as constant
 
 import matplotlib.pyplot as plt # for testing
 
-def generate_signal(test_location, mic_location, signal_frequency, sample_frequency, sample_length, amplitude):
+def generate_signal(test_location, mic_location, signal_frequency, sample_frequency = 44100, sample_length = 10e-3, amplitude=1):
 
     distance = np.sqrt(np.power(test_location[0] - mic_location[0], 2) + np.power(test_location[1] - mic_location[1], 2))
     # distance from test loc to mic loc
@@ -18,16 +18,31 @@ def generate_signal(test_location, mic_location, signal_frequency, sample_freque
     signal = np.linspace(0, sample_length, int(sample_length*sample_frequency))
     # create signal, initially fill array with time values
 
-    siggen = lambda t: amplitude * np.power(2,15) * np.sin(2*np.pi*signal_frequency*t - phase_offset)
+    siggen = lambda t: amplitude * np.sin(2*np.pi*signal_frequency*t - phase_offset)
     # lambda function to populate array
 
     signal = siggen(signal)
     # generate sinusoidal signal
 
-    signal.astype(int)
+    return signal
+
+def signal_to_16_bit(signal, proportion = 0.5):
+    
+    # find max value of input signal
+    max_height = np.maximum(np.abs(signal))
+
+    # lambda function to convert array
+    convert = lambda x: ( proportion * np.power(2, 15) / max_height ) * x
+
+    # convert to realistic range for 16-bit signed integers
+    signal = convert(signal)
+
     # convert to int
+    signal.astype(int)
 
     return signal
+
+
 
 def main():
 

@@ -6,6 +6,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 import pandas as pd
 import os
 import numpy as np
+import triangulation
 
 # define global variables
 x_mics = None
@@ -22,6 +23,9 @@ act_toa = None
 act_tri = None
 est_tri = None
 
+x_tri = None
+y_tri = None
+
 x_max = 0
 y_max = 0
 num_points = 0
@@ -31,6 +35,10 @@ parabolas = None
 colours = None
 
 test_dir = ""
+
+mic_co_ords = None
+
+freq = None
 
 
 # plot test points
@@ -46,11 +54,11 @@ def plot_test_points():
     plt.title('Test Points on Grid')
 
     # Set limits for grid points
-    plt.xlim(0, x_max) 
-    plt.ylim(0, y_max)  
+    plt.xlim(0, x_max)
+    plt.ylim(0, y_max)
 
     # Save the figure as a JPEG file
-    plt.savefig(test_dir + '/test_points.jpg',dpi=300)
+    plt.savefig(test_dir + '/test_points.jpg', dpi=300)
 
 
 # plot resultant points
@@ -70,7 +78,7 @@ def plot_result_points():
     plt.ylim(0, y_max)  # Set y-axis limits from 0 to 12
 
     # Save the figure as a JPEG file
-    plt.savefig(test_dir + '/result_points.jpg',dpi=300)
+    plt.savefig(test_dir + '/result_points.jpg', dpi=300)
 
 
 # plot test and resultant points
@@ -80,10 +88,13 @@ def plot_test_result_points():
 
     # Create a scatter plot for each pair of test and resultant points
     for i in range(len(x_test)):
-        plt.scatter(x_test[i], y_test[i], label=f'Test Point {i+1}', color=colours[i], marker='s', s=50)
-        plt.scatter(x_res[i], y_res[i], label=f'Resultant Point {i+1}', color=colours[i], marker='o', s=50)
+        plt.scatter(
+            x_test[i], y_test[i], label=f'Test Point {i+1}', color=colours[i], marker='s', s=50)
+        plt.scatter(
+            x_res[i], y_res[i], label=f'Resultant Point {i+1}', color=colours[i], marker='o', s=50)
 
-    legend_handles = [Line2D([0], [0], marker='s', color='w', label='Test Points', markersize=10, markerfacecolor='black'),Line2D([0], [0], marker='o', color='w', label='Resultant Points', markersize=10, markerfacecolor='black')]
+    legend_handles = [Line2D([0], [0], marker='s', color='w', label='Test Points', markersize=10, markerfacecolor='black'), Line2D(
+        [0], [0], marker='o', color='w', label='Resultant Points', markersize=10, markerfacecolor='black')]
 
     # Add labels and a legend
     plt.xlabel('X')
@@ -92,9 +103,7 @@ def plot_test_result_points():
     plt.legend(handles=legend_handles)
 
     # Save the figure as a JPEG file
-    plt.savefig(test_dir + '/test_result_points.jpg',dpi=300)
-
-    
+    plt.savefig(test_dir + '/test_result_points.jpg', dpi=300)
 
 
 # plot test, result and parabolas for all array of test points
@@ -102,14 +111,16 @@ def plot_all_points():
     global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points
 
     # Create and save individual scatter plots
-    for i, (x_t, y_t, x_r, y_r) in enumerate(zip(x_test,y_test,x_res,y_res)):
+    for i, (x_t, y_t, x_r, y_r) in enumerate(zip(x_test, y_test, x_res, y_res)):
         plt.figure(figsize=(6, 4))
-        plt.scatter(x_t, y_t, label=f'Test Point {i+1}', color=colours[i], marker='s', s=50)
-        plt.scatter(x_r, y_r, label=f'Resultant Point {i+1}', color=colours[i], marker='o', s=50)
-        for k in range(0,6,2):
-             plt.plot(parabolas[i][k], parabolas[i][k+1], color='black')
-        plt.xlim(0, x_max) 
-        plt.ylim(0, y_max)  
+        plt.scatter(
+            x_t, y_t, label=f'Test Point {i+1}', color=colours[i], marker='s', s=50)
+        plt.scatter(
+            x_r, y_r, label=f'Resultant Point {i+1}', color=colours[i], marker='o', s=50)
+        for k in range(0, 3):
+            plt.contour(x_tri, y_tri, parabolas[i][k], [0], colors=["black"])
+        plt.xlim(0, x_max)
+        plt.ylim(0, y_max)
         plt.grid(True)
         plt.title(f"Test Point {i+1} Results")
         plt.xlabel("X")
@@ -122,39 +133,41 @@ def plot_all_points():
     # Create and display all scatter plots together in one figure using subplots
     fig, axs = plt.subplots(2, 5, figsize=(20, 8))
 
-    for i, (x_t, y_t, x_r, y_r,ax) in enumerate(zip(x_test,y_test,x_res,y_res,axs.ravel())):
-        ax.scatter(x_t, y_t, label=f'Test Point {i+1}', color=colours[i], marker='s', s=50)
-        ax.scatter(x_r, y_r, label=f'Resultant Point {i+1}', color=colours[i], marker='o', s=50)
-        for k in range(0,6,2):
-             ax.plot(parabolas[i][k], parabolas[i][k+1], color='black')
+    for i, (x_t, y_t, x_r, y_r, ax) in enumerate(zip(x_test, y_test, x_res, y_res, axs.ravel())):
+        ax.scatter(
+            x_t, y_t, label=f'Test Point {i+1}', color=colours[i], marker='s', s=50)
+        ax.scatter(
+            x_r, y_r, label=f'Resultant Point {i+1}', color=colours[i], marker='o', s=50)
+        for k in range(0, 3):
+            ax.contour(x_tri, y_tri, parabolas[i][k], [0], colors=["black"])
         ax.set_title(f"Test Point {i+1}")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.legend()
         ax.grid(True)
 
-
     plt.tight_layout()
 
     # Save the final subplotted scatter plots as an image
-    plt.savefig(test_dir + "/subplotted_point_results.jpg", bbox_inches="tight")
+    plt.savefig(test_dir + "/subplotted_point_results.jpg",
+                bbox_inches="tight")
 
 # generate xlsx for time of arrival results
+
+
 def ss_toa():
     global x_max, est_toa, act_toa, num_points
-    
+
     points = np.linspace(1, num_points, num_points)
-        
+
     data = {
-        'Points' : points,
-        'Mic 1 Actual ' : act_toa[0],
-        'Mic 1 Estimated ' : est_toa[0],
-        'Mic 2 Actual ' : act_toa[1],
-        'Mic 2 Estimated ' : est_toa[1],
-        'Mic 3 Actual ' : act_toa[2],
-        'Mic 3 Estimated ' : est_toa[2],
-        'Mic 4 Actual ' : act_toa[3],
-        'Mic 4 Estimated ' : est_toa[3],
+        'Points': points,
+        'Mic Pair 1 Actual ': act_toa[:, 0],
+        'Mic Pair 1 Estimated ': est_toa[:, 0],
+        'Mic Pair 2 Actual ': act_toa[:, 1],
+        'Mic Pair 2 Estimated ': est_toa[:, 1],
+        'Mic Pair 3 Actual ': act_toa[:, 2],
+        'Mic Pair 3 Estimated ': est_toa[:, 2],
     }
 
     # Create a DataFrame
@@ -175,24 +188,27 @@ def ss_toa():
     workbook.save(excel_file)
 
 # generate xlsx for triangulation results
+
+
 def ss_tri():
     global x_test, y_test, x_res, y_res
-    
+
     points = np.linspace(1, num_points, num_points)
-    
+
     act = []
     est = []
     dist_err = []
     for i in range(0, num_points):
         act.append('(' + str(x_test[i]) + ',' + str(y_test[i]) + ')')
         est.append('(' + str(x_res[i]) + ',' + str(y_res[i]) + ')')
-        dist_err.append(math.sqrt((x_test[i] - x_res[i])**2 + (y_test[i] - y_res[i])**2))
+        dist_err.append(
+            math.sqrt((x_test[i] - x_res[i])**2 + (y_test[i] - y_res[i])**2))
 
     data = {
-        'Points' : points,
-        'Actual Co-Ord' : act,
-        'Estimated Co-Ord' : est,
-        'Error Distance ' : dist_err,
+        'Points': points,
+        'Actual Co-Ord': act,
+        'Estimated Co-Ord': est,
+        'Error Distance ': dist_err,
     }
 
     # Create a DataFrame
@@ -212,10 +228,24 @@ def ss_tri():
     # Save the Excel file
     workbook.save(excel_file)
 
-# generate xlsx for simulation input parameteres (frequency/microphone points)
+# generate text file for simulation input parameteres (frequency/microphone points)
+
+
+def sim_param_s():
+    global test_dir, freq, mic_co_ords
+
+    file_name = test_dir + "/Test_Parameters.txt"
+    with open(file_name, 'w') as file:
+        # Write the data to the file
+        file.write("Frequency: " + str(freq) + "\n")
+        for i in range(1, 5):
+            file.write(
+                "Mic" + str(i) + ": (" + str(mic_co_ords[i-1][0]) + "," + str(mic_co_ords[i-1][1]) + ")\n")
 
 
 # create directories for test results
+
+
 def create_dir():
     global test_dir
 
@@ -236,6 +266,8 @@ def create_dir():
         count_dir += 1
 
 # generate random parabola for testing
+
+
 def rand_par(x_max):
     # Generate x values (e.g., from -5 to 5)
     x_values = np.linspace(0, x_max, 50)
@@ -248,12 +280,14 @@ def rand_par(x_max):
     # Calculate y values using the parabola equation
     y_values = a * x_values**2 + b * x_values + c
 
-    return x_values,y_values
+    return x_values, y_values
 
 # complete gui function for main sim program
-def run(x_test_in,y_test_in,x_res_in,y_res_in,x_max_in,y_max_in,parabolas_in,num_points_in, est_toa_in, act_toa_in):
+
+
+def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in, num_points_in, est_toa_in, act_toa_in, parabolas_in, x_tri_in, y_tri_in):
     # set all necessary global variables
-    global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points, est_toa, act_toa    
+    global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points, est_toa, act_toa, x_tri, y_tri, freq, mic_co_ords
     x_test = x_test_in
     y_test = y_test_in
     x_res = x_res_in
@@ -264,8 +298,12 @@ def run(x_test_in,y_test_in,x_res_in,y_res_in,x_max_in,y_max_in,parabolas_in,num
     num_points = num_points_in
     est_toa = est_toa_in
     act_toa = act_toa_in
+    x_tri = x_tri_in
+    y_tri = y_tri_in
+    freq = freq_in
+    mic_co_ords = mic_co_ords_in
 
-    #create the relevant directories
+    # create the relevant directories
     create_dir()
 
     # plot the result points
@@ -280,33 +318,50 @@ def run(x_test_in,y_test_in,x_res_in,y_res_in,x_max_in,y_max_in,parabolas_in,num
     # create xlsx file with tri results
     ss_tri()
 
+    # save system parameters to text file
+    sim_param_s()
+
 # main funtcion to test gui.py
+
+
 def main():
-    global x_max,y_max
-    x_test_in = np.array([1,2,3,4,5])
-    y_test_in = np.array([1,2,3,4,5])
-    x_res_in = np.array([1.1,1.9,3.2,3.8,5.05])
-    y_res_in = np.array([1.1,1.9,3.2,3.8,5.05])
-    x_max_in = 6
-    y_max_in = 6
+    xs, ys = 40, 40
+    x_test_in = np.array([xs, xs, xs, xs])
+    y_test_in = np.array([ys, ys, ys, ys])
+    x_max_in = 100
+    y_max_in = 100
     num_points_in = 4
+    freq_in = 280.0
 
-    parabolas = np.empty((5,6), dtype=object)
-    for i in range(0,5):
-        for k in range(0,6,2):
-            parabolas[i][k], parabolas[i][k+1] = rand_par(x_max_in)
-    
-    est_toa_in = np.empty((num_points_in,4))
-    act_toa_in = np.empty((num_points_in,4))
+    mic_co_ords_in = [0, 0], [0, 0.8], [0.5, 0], [0.5, 0.8]
+
+    t1 = 40*np.sqrt(2)-20*np.sqrt(13)
+    t2 = 40*np.sqrt(2)-60*np.sqrt(2)
+    t3 = 40*np.sqrt(2)-20*np.sqrt(13)
+
+    param = [0, 0, 0, 100, t1, 100, 100, t2, 100, 0, t3]
+    xe, ye, x, y, h1, h2, h3 = triangulation.triangulate(
+        param, [1, 0, 100, 0, 100])
+    parabolas = np.empty((num_points_in, 3), dtype=object)
+    temp = [h1, h2, h3]
+    for i in range(0, num_points_in):
+        for k in range(0, 3):
+            parabolas[i][k] = temp[k]
+
+    x_res_in = [xe, xe, xe, xe]
+    y_res_in = [ye, ye, ye, ye]
+
+    est_toa_in = np.empty((num_points_in, 3))
+    act_toa_in = np.empty((num_points_in, 3))
     for r in range(0, num_points_in):
-        for c in range(0,4):
-            est_toa_in[r][c] = r
-            act_toa_in[r][c] = r
+        for c in range(0, 3):
+            est_toa_in[r][c] = c
+            act_toa_in[r][c] = c
 
+    run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in,
+        num_points_in, est_toa_in, act_toa_in, parabolas, x, y)
 
-    run(x_test_in,y_test_in,x_res_in,y_res_in,x_max_in,y_max_in,parabolas,num_points_in,est_toa_in, act_toa_in)
 
 # Check if the script is being run as the main program
 if __name__ == "__main__":
     main()
-
