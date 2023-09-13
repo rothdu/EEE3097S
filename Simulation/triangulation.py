@@ -14,7 +14,7 @@ from numpy import arange, meshgrid, sqrt
 # 
 #   The helper mic coords and constant can be in any order as long as their x, y and ct correspond
 #   
-#   mesh is an array of the form: [delta, xlow, xhigh, ylow, yhigh]
+#   mesh is an array of the form: [xlow, xhigh, xdelta, ylow, yhigh, ydelta]
 # 
 #   Returns xe,ye,x,y,h1,h2,h3: estimated source position, base meshgrid, hyperbolic meshgrid for each mic pair
 
@@ -36,7 +36,7 @@ def triangulate(param,mesh):
     ye = (ans1[0][y]+ans2[0][y]+ans3[0][y])/3
 
     # defines a meshgrid of x and y, to produce meshgrids h1, h2, h3 for plotting
-    x, y = meshgrid( arange(mesh[1], mesh[2], mesh[0]), arange(mesh[3], mesh[4], mesh[0]))
+    x, y = meshgrid( arange(mesh[0], mesh[1], mesh[2]), arange(mesh[3], mesh[4], mesh[5]))
     h1 = sqrt((x-param[0])**2+(y-param[1])**2)-sqrt((x-param[2])**2+(y-param[3])**2)-param[4]
     h2 = sqrt((x-param[0])**2+(y-param[1])**2)-sqrt((x-param[5])**2+(y-param[6])**2)-param[7]
     h3 = sqrt((x-param[0])**2+(y-param[1])**2)-sqrt((x-param[8])**2+(y-param[9])**2)-param[10]
@@ -53,7 +53,7 @@ def main():
     t3 = 40*sqrt(2)-20*sqrt(13)
 
     param = [0,0,0,100,t1,100,100,t2,100,0,t3]
-    mesh = [1,0,100,0,100]
+    mesh = [0,100,1,0,100,1]
     xe, ye, x, y, h1, h2, h3 = triangulate(param,mesh)
     
     plt.contour(x,y,h1,[0])
