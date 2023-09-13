@@ -3,7 +3,7 @@ import sympy as sym
 import matplotlib.pyplot as plt
 from numpy import arange, meshgrid, sqrt
 
-#   triangulate(param):
+#   triangulate(param,mesh):
 #   param is an array of the form: [xr,yr,x1,y1,ct1,x2,y2,ct2,x3,y3,ct3]
 # 
 #   xr = X coordinates of reference mic
@@ -14,9 +14,11 @@ from numpy import arange, meshgrid, sqrt
 # 
 #   The helper mic coords and constant can be in any order as long as their x, y and ct correspond
 #   
+#   mesh is an array of the form: [delta, xlow, xhigh, ylow, yhigh]
+# 
 #   Returns xe,ye,x,y,h1,h2,h3: estimated source position, base meshgrid, hyperbolic meshgrid for each mic pair
 
-def triangulate(param):
+def triangulate(param,mesh):
 
     # creates hyperbolic equations in non-linear form
     x,y = sym.symbols('x,y')
@@ -34,8 +36,7 @@ def triangulate(param):
     ye = (ans1[0][y]+ans2[0][y]+ans3[0][y])/3
 
     # defines a meshgrid of x and y, to produce meshgrids h1, h2, h3 for plotting
-    delta = 1
-    x, y = meshgrid( arange(0, 100, delta), arange(0, 100, delta))
+    x, y = meshgrid( arange(mesh[1], mesh[2], mesh[0]), arange(mesh[3], mesh[4], mesh[0]))
     h1 = sqrt((x-param[0])**2+(y-param[1])**2)-sqrt((x-param[2])**2+(y-param[3])**2)-param[4]
     h2 = sqrt((x-param[0])**2+(y-param[1])**2)-sqrt((x-param[5])**2+(y-param[6])**2)-param[7]
     h3 = sqrt((x-param[0])**2+(y-param[1])**2)-sqrt((x-param[8])**2+(y-param[9])**2)-param[10]
