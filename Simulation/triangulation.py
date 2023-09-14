@@ -32,23 +32,26 @@ def triangulate(param, mesh):
                 sym.sqrt((x-param[8])**2+(y-param[9])**2), param[10])
 
     # solves each hyperbolic pair
-    ans1 = filter_ans(sym.solve([e1, e2]), mesh, x, y,inline)
-    ans2 = filter_ans(sym.solve([e1, e3]), mesh, x, y,inline)
-    ans3 = filter_ans(sym.solve([e2, e3]), mesh, x, y,inline)
-    ans = [ans1,ans2,ans3]
+    ans_arr = [filter_ans(sym.solve([e1, e2]), mesh, x, y),
+            filter_ans(sym.solve([e1, e3]), mesh, x, y),
+            filter_ans(sym.solve([e2, e3]), mesh, x, y) ]
     # finds midpoint of each pair
     xe = 0
     ye = 0
-    countx = 0
-    county = 0
-    for i in ans:
-        if(ans!=None):
-            xe = xe + ans[x]
-            ye = ye + ans[y]
-    if(ans1 == None and ans2==None and ans3==None):
+
+    success = False
+    for ans in ans_arr:
+        
+        if len(ans) > 0:
+            success = True
+            xe = xe + ans[0][x]
+            ye = ye + ans[0][y]
+    xe /= len(ans_arr)
+    ye /= len(ans_arr)
+
+    if not success:
         xe = -10
         ye = -10
-    else:
         
     # defines a meshgrid of x and y, to produce meshgrids h1, h2, h3 for plotting
     x, y = meshgrid(arange(mesh[0], mesh[1], mesh[2]),
@@ -64,16 +67,40 @@ def triangulate(param, mesh):
 
 
 def filter_ans(ans, mesh, x, y):
+    
+    
+    ans_out = []
     for i in range(len(ans)):  # loop over possible answers
 
         # check for (invalid) complex answers
-        if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][y]):
+        if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
             continue
             # check that answer is within range of meshgrid + some tolerance:
         if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
             and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
-            return ans[i]           
-    return None  # no valid result found = return first
+            ans_out.append(ans[i])
+
+    # if you don't find a point inside the grid:
+    if len(ans_out) == 0 and len(ans) > 0:
+        dists = []
+        for i in range(len(ans)):
+            if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
+                continue
+
+            dists.append(compute_closest_distance(ans[i], mesh, x, y))
+        
+        max_index = np.argmax(dists)
+        ans_out.append(ans[max_index])
+
+    return ans_out  
+
+
+def compute_closest_distance(ans_indexed, mesh, x, y):
+    
+    dx = np.max([mesh[0] - ans_indexed[x], 0, ans_indexed[x] - mesh[1]]) # find dx
+    dy = np.min([mesh[3] - ans_indexed[y], 0, ans_indexed[y] - mesh[4]]) # find dy
+    return np.power((np.power(dx, 2) + np.power(dy, 2)), 0.5) # return distance
+
 
 def dis(x,y,x1,y1,x2,y2,x3,y3,x4,y4):
 
@@ -85,3 +112,43 @@ def dis(x,y,x1,y1,x2,y2,x3,y3,x4,y4):
 
 def distancesize(x): return (x * constant.speed_of_sound)
 
+def main():
+    # sample program for source position 40,40 with mics at corners of 100x100 grid
+    # finds the estimated position and plots all the curves and points on one plot
+    xs, ys = 0.7988246329861778, 0.12506774017562355
+
+    # t1 = 40*sqrt(2)-20*sqrt(13)
+    # t2 = 40*sqrt(2)-60*sqrt(2)
+    # t3 = 40*sqrt(2)-20*sqrt(13)
+
+    d1,d2,d3 = dis(xs,ys,0,0,0.8,0,0.8,0.5,0,0.5)
+
+    tdoa1 = d1/constant.speed_of_sound
+    tdoa2 = d2/constant.speed_of_sound
+    tdoa3 = d3/constant.speed_of_sound
+    
+    tdoa = [tdoa1, tdoa2, tdoa3]
+    print(tdoa)
+
+    t1,t2,t3 = 0.002018140589569161, 0.0012698412698412698, -0.00020408163265306123
+    d1 = distancesize(t1)
+    d2 = distancesize(t2)
+    d3 = distancesize(t3)
+
+    param = [0, 0, 0.8, 0, d1, 0.8, 0.5, d2, 0, 0.5, d3]
+    mesh = [0, 0.8, 0.8/100, 0, 0.5, 0.5/100]
+    xe, ye, x, y, h1, h2, h3 = triangulate(param, mesh)
+    print(xe)
+    print(ye)
+    plt.contour(x, y, h1, [0])
+    plt.contour(x, y, h2, [0])
+    plt.contour(x, y, h3, [0])
+    plt.plot(xs, ys, 'co', markersize=10)
+    plt.plot(xe, ye, 'r.', markersize=10)
+    plt.show()
+
+    
+
+
+if __name__ == "__main__":
+    main()

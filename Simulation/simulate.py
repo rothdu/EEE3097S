@@ -7,7 +7,6 @@ import gui
 import sig_gen
 import signal_procesing
 import triangulation
-import pyroomacoustics
 import numpy as np
 import wav_signal
 
