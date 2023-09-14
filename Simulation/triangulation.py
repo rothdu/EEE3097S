@@ -109,3 +109,43 @@ def dis(x,y,x1,y1,x2,y2,x3,y3,x4,y4):
 
 def distancesize(x): return (x * constant.speed_of_sound)
 
+def main():
+    # sample program for source position 40,40 with mics at corners of 100x100 grid
+    # finds the estimated position and plots all the curves and points on one plot
+    xs, ys = 0.7988246329861778, 0.12506774017562355
+
+    # t1 = 40*sqrt(2)-20*sqrt(13)
+    # t2 = 40*sqrt(2)-60*sqrt(2)
+    # t3 = 40*sqrt(2)-20*sqrt(13)
+
+    d1,d2,d3 = dis(xs,ys,0,0,0.8,0,0.8,0.5,0,0.5)
+
+    tdoa1 = d1/constant.speed_of_sound
+    tdoa2 = d2/constant.speed_of_sound
+    tdoa3 = d3/constant.speed_of_sound
+    
+    tdoa = [tdoa1, tdoa2, tdoa3]
+    print(tdoa)
+
+    t1,t2,t3 = 0.002018140589569161, 0.0012698412698412698, -0.00020408163265306123
+    d1 = distancesize(t1)
+    d2 = distancesize(t2)
+    d3 = distancesize(t3)
+
+    param = [0, 0, 0.8, 0, d1, 0.8, 0.5, d2, 0, 0.5, d3]
+    mesh = [0, 0.8, 0.8/100, 0, 0.5, 0.5/100]
+    xe, ye, x, y, h1, h2, h3 = triangulate(param, mesh)
+    print(xe)
+    print(ye)
+    plt.contour(x, y, h1, [0])
+    plt.contour(x, y, h2, [0])
+    plt.contour(x, y, h3, [0])
+    plt.plot(xs, ys, 'co', markersize=10)
+    plt.plot(xe, ye, 'r.', markersize=10)
+    plt.show()
+
+    
+
+
+if __name__ == "__main__":
+    main()
