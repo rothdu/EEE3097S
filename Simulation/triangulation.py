@@ -73,7 +73,7 @@ def filter_ans(ans, mesh, x, y):
     for i in range(len(ans)):  # loop over possible answers
 
         # check for (invalid) complex answers
-        if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][y]):
+        if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
             continue
             # check that answer is within range of meshgrid + some tolerance:
         if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
@@ -84,7 +84,7 @@ def filter_ans(ans, mesh, x, y):
     if len(ans_out) == 0 and len(ans) > 0:
         dists = []
         for i in range(len(ans)):
-            if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][y]):
+            if (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
                 continue
 
             dists.append(compute_closest_distance(ans[i], mesh, x, y))
