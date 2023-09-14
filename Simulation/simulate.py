@@ -9,6 +9,7 @@ import signal_procesing
 import triangulation
 import pyroomacoustics
 import numpy as np
+import wav_signal
 
 
 def main():
@@ -18,15 +19,18 @@ def main():
     # populate global points randomly
     if config["points"]["random"]:
         populate_random_points(config["points"], 0.8, 0.5)
-    
-    #tests(config) # no noise tests
 
-    tests(config, "g") # gaussian noise tests
+    # tests(config) # no noise tests
 
-    
+    tests(config, "")  # gaussian noise tests
+
+
 # noisetype can be any combination of "g", "p", and "i", e.g., "gpi", "ip", "g", etc.
 # the output signal for the tests will use all of the specified noise types
 def tests(config, noisetype="none"):
+    # LOAD SOUND FILE
+    sample_rate, refsig = wav_signal.load_signal("Simulation/sound.wav")
+
     # loop over specified test parameters
     for test in config["tests"]:
 
@@ -49,9 +53,9 @@ def tests(config, noisetype="none"):
         for point in test["points"]["points"]:
 
             # debug
-            count += 1
-            if count == 3:
-                break
+            # count += 1
+            # if count == 3:
+            #     break
 
             # initialise list to store the signals
             signals = []
@@ -63,8 +67,10 @@ def tests(config, noisetype="none"):
             # generate unique signal for each mic
             for mic_loc in test["mics"]["mics"]:
                 # generate signal and add to signals array as well as act_tdoa array
-                sig, tdoa = sig_gen.generate_signal(
-                    point, mic_loc, test["frequency"]["value"], amplitude=6)
+                # sig, tdoa = sig_gen.generate_signal(
+                #     point, mic_loc, test["frequency"]["value"], amplitude=6)
+                sig, tdoa = wav_signal.gen_delay(
+                    refsig, point, mic_loc, 1000, sample_rate, 1000)
                 signals.append(sig)
                 if ref_tdoa == None:
                     ref_tdoa = tdoa
@@ -72,16 +78,13 @@ def tests(config, noisetype="none"):
                     act_tdoas.append(ref_tdoa - tdoa)
 
             # add signal noise
-            if noisetype in "gpigippgipigigpipg" : #check for valid noise inputs
+            if noisetype in "gpigippgipigigpipg":  # check for valid noise inputs
                 for signal_index in range(len(signals)):
                     signal = signals[signal_index]
                     signal_length = signal.shape[0] / 44100
 
-
                     signals[signal_index] = signal_procesing.add_noise(noisetype,
-                                                        signal, signal_length, 44100)
-                    
-            
+                                                                       signal, signal_length, 44100)
 
             # initialise list to store tdoas
             est_tdoas = []
@@ -89,8 +92,11 @@ def tests(config, noisetype="none"):
             # use gcc-phat on pairs of signals, using first signal as reference
             for i in range(1, len(signals)):
                 tau = pyroomacoustics.experimental.localization.tdoa(
-                    signals[0], signals[i], fs=44100)
+                    signals[0], signals[i], fs=sample_rate)
                 est_tdoas.append(tau)
+            print("point = " + str(point))
+            print("estimated tdoas = " + str(est_tdoas))
+            print("actual tdoas = " + str(est_tdoas))
 
             # convert tdoas to distances for triangulation
             def distancesize(x): return x * constant.speed_of_sound
@@ -132,7 +138,6 @@ def tests(config, noisetype="none"):
             # plt.plot(xe, ye, 'r.', markersize=10)
             # plt.show()
 
-        
         print("running gui")
 
         # debugging:
@@ -147,6 +152,7 @@ def tests(config, noisetype="none"):
         gui.run(test["frequency"]["value"], mics, x_test,
                 y_test, x_est, y_est, 0.8, 0.5, 2, all_est_tdoas, all_act_tdoas, parabolas, x, y, False)
 
+        print("finnished first")
 
 
 # adds a random point to a list

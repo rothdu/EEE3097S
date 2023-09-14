@@ -51,17 +51,18 @@ def triangulate(param, mesh):
 
     return sym.N(xe), sym.N(ye), x, y, h1, h2, h3
 
+
 def filter_ans(ans, mesh, x, y):
-    for i in range(len(ans)): # loop over possible answers
+    for i in range(len(ans)):  # loop over possible answers
 
         # check for (invalid) complex answers
         if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][y]):
             continue
         # check that answer is within range of meshgrid:
-        if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1] 
-            and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
+        if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
+                and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
             return ans[i]
-    return None # no valid result found = return first       
+    return None  # no valid result found = return first
 
 
 def main():
