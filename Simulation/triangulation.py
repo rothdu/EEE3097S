@@ -84,6 +84,9 @@ def filter_ans(ans, mesh, x, y):
     if len(ans_out) == 0 and len(ans) > 0:
         dists = []
         for i in range(len(ans)):
+            if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][y]):
+                continue
+
             dists.append(compute_closest_distance(ans, mesh, x, y))
         
         max_index = np.argmax(dists)
