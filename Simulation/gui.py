@@ -177,7 +177,7 @@ def ss_toa_err():
                     round((act_toa[p][m]-est_toa[p][m])/act_toa[p][m]*100, 5))
             else:
                 err[p][m] = str(round(est_toa[p][m]/100, 5))
-            if p_f[p] == True and err[p][m] and err[p][m] > acc:
+            if p_f[p] == True and err[p][m] and (err[p][m] > acc or err[p][m] < -1*acc):
                 p_f[p] = False
 
     p_f_print = []
@@ -221,17 +221,17 @@ def ss_toa_val():
     mic1_act = [row[0] for row in act_toa]
     mic2_act = [row[1] for row in act_toa]
     mic3_act = [row[2] for row in act_toa]
-    mic1_est = [row[0] for row in act_toa]
-    mic2_est = [row[1] for row in act_toa]
-    mic3_est = [row[2] for row in act_toa]
+    mic1_est = [row[0] for row in est_toa]
+    mic2_est = [row[1] for row in est_toa]
+    mic3_est = [row[2] for row in est_toa]
 
     data = {
         'Points': points,
         'Mic Pair 1 Actual ': mic1_act,
         'Mic Pair 1 Estimated ': mic2_est,
-        'Mic Pair 2 Actual ': mic2_act,
-        'Mic Pair 2 Estimated ': mic2_est,
-        'Mic Pair 3 Actual ': mic3_act,
+        'Mic Pair 2 Actual ': mic3_act,
+        'Mic Pair 2 Estimated ': mic1_est,
+        'Mic Pair 3 Actual ': mic2_act,
         'Mic Pair 3 Estimated ': mic3_est,
     }
 
@@ -262,7 +262,8 @@ def ss_tri():
 
     x_err = []
     y_err = []
-    p_f = []
+    x_p_f = np.array([True] * num_points, dtype=bool)
+    y_p_f = np.array([True] * num_points, dtype=bool)
     for i in range(0, num_points):
         x_err.append(round((x_test[i]-x_res[i])/x_test[i]*100, 5))
         y_err.append(round((y_test[i]-y_res[i])/y_test[i]*100, 5))
@@ -270,19 +271,28 @@ def ss_tri():
             acc = 5.0
         else:
             acc = 2.0
-        if x_err[i] <= acc:
-            p_f.append("Passed")
-        else:
-            p_f.append("failed")
+        if x_p_f[i] == True and (x_err[i] >= acc or x_err[i] <= -1 * acc):
+            x_p_f[i] = False
+        if y_p_f[i] == True and (y_err[i] >= acc or y_err[i] <= -1 * acc):
+            y_p_f[i] = False
 
         x_err[i] = str(x_err[i])
         y_err[i] = str(y_err[i])
 
+    p_f_print = []
+    for i in range(0, num_points):
+        if x_p_f[i] and y_p_f[i]:
+            p_f_print.append("Pass")
+        else:
+            p_f_print.append("Fail")
+
     act = []
     est = []
     for i in range(0, num_points):
-        act.append('(' + str(x_test[i]) + ',' + str(y_test[i]) + ')')
-        est.append('(' + str(x_res[i]) + ',' + str(y_res[i]) + ')')
+        act.append(
+            '(' + str(round(x_test[i], 5)) + ',' + str(round(y_test[i], 5)) + ')')
+        est.append(
+            '(' + str(round(x_res[i], 5)) + ',' + str(round(y_res[i], 5)) + ')')
         # dist_err.append(
         #     math.sqrt((x_test[i] - x_res[i])**2 + (y_test[i] - y_res[i])**2))
 
@@ -292,7 +302,7 @@ def ss_tri():
         'Estimated Co-Ord': est,
         'X Percentage Error': x_err,
         'Y Percentage Error': y_err,
-        'Pass/Fail': p_f
+        'Pass/Fail': p_f_print
     }
 
     # Create a DataFrame
@@ -437,15 +447,15 @@ def main():
     x_res_in = [xe, xe, xe, xe]
     y_res_in = [ye, ye, ye, ye]
 
-    est_toa_in = np.empty((num_points_in, 3))
-    act_toa_in = np.empty((num_points_in, 3))
-    for r in range(0, num_points_in):
-        for c in range(0, 3):
-            est_toa_in[r][c] = c
-            act_toa_in[r][c] = c
+    # # est_toa_in = np.empty((num_points_in, 3))
+    # # act_toa_in = np.empty((num_points_in, 3))
+    # # for r in range(0, num_points_in):
+    # #     for c in range(0, 3):
+    # #         est_toa_in[r][c] = c
+    # #         act_toa_in[r][c] = c
 
-    run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in,
-        num_points_in, est_toa_in, act_toa_in, parabolas, x, y, True)
+    # run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in,
+    #     num_points_in, est_toa_in, act_toa_in, parabolas, x, y, True)
 
 
 # Check if the script is being run as the main program

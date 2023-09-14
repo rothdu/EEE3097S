@@ -22,7 +22,7 @@ def generate_signal(test_location, mic_location, signal_frequency, sample_freque
     samples_per_wavelength = sample_frequency/signal_frequency
     sample_offset = int((distance % wavelength) /
                         wavelength * samples_per_wavelength)
-    tdoa = sample_offset * sample_frequency
+    tdoa = sample_offset * 1/sample_frequency
     # phase difference to place in mic location
     print(signal)
     signal = np.roll(signal, sample_offset)

@@ -29,8 +29,6 @@ def main():
         # initialise resultantant arrays
         x_est = []
         y_est = []
-        x_tri = []
-        y_tri = []
         all_est_tdoas = []
         all_act_tdoas = []
         parabolas = []
@@ -51,6 +49,7 @@ def main():
             signals = []
 
             # inititialize list to store the actual tdoas
+            ref_tdoa = None
             act_tdoas = []
 
             # generate unique signal for each mic
@@ -59,7 +58,10 @@ def main():
                 sig, tdoa = sig_gen.generate_signal(
                     point, mic_loc, test["frequency"]["value"], amplitude=6)
                 signals.append(sig)
-                act_tdoas.append(tdoa)
+                if ref_tdoa == None:
+                    ref_tdoa = tdoa
+                else:
+                    act_tdoas.append(ref_tdoa - tdoa)
 
             # initialise list to store tdoas
             est_tdoas = []
@@ -106,13 +108,18 @@ def main():
             # plt.contour(x,y,h2,[0])
             # plt.contour(x,y,h3,[0])
             # plt.plot(xs,ys,'co',markersize=10)
-            # plt.plot(xe,ye,'r.',markersize=10)
+            # plt.plot(xe, ye, 'r.', markersize=10)
             # plt.show()
 
         print("running gui")
-        print(all_points)
+        print(all_act_tdoas)
+        print(all_est_tdoas)
+
+        # convert points to correct form for gui parameters
         x_test = [row[0] for row in all_points]
         y_test = [row[1] for row in all_points]
+
+        # run the gui
         gui.run(test["frequency"]["value"], mics, x_test,
                 y_test, x_est, y_est, 0.8, 0.5, 2, all_est_tdoas, all_act_tdoas, parabolas, x, y, False)
 
