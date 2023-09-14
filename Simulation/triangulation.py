@@ -32,23 +32,26 @@ def triangulate(param, mesh):
                 sym.sqrt((x-param[8])**2+(y-param[9])**2), param[10])
 
     # solves each hyperbolic pair
-    ans1 = filter_ans(sym.solve([e1, e2]), mesh, x, y,inline)
-    ans2 = filter_ans(sym.solve([e1, e3]), mesh, x, y,inline)
-    ans3 = filter_ans(sym.solve([e2, e3]), mesh, x, y,inline)
-    ans = [ans1,ans2,ans3]
+    ans_arr = [filter_ans(sym.solve([e1, e2]), mesh, x, y),
+            filter_ans(sym.solve([e1, e3]), mesh, x, y),
+            filter_ans(sym.solve([e2, e3]), mesh, x, y) ]
     # finds midpoint of each pair
     xe = 0
     ye = 0
-    countx = 0
-    county = 0
-    for i in ans:
-        if(ans!=None):
-            xe = xe + ans[x]
-            ye = ye + ans[y]
-    if(ans1 == None and ans2==None and ans3==None):
+
+    success = False
+    for ans in ans_arr:
+        
+        if len(ans) > 0:
+            success = True
+            xe = xe + ans[0][x]
+            ye = ye + ans[0][y]
+    xe /= len(ans_arr)
+    ye /= len(ans_arr)
+
+    if not success:
         xe = -10
         ye = -10
-    else:
         
     # defines a meshgrid of x and y, to produce meshgrids h1, h2, h3 for plotting
     x, y = meshgrid(arange(mesh[0], mesh[1], mesh[2]),
@@ -64,6 +67,9 @@ def triangulate(param, mesh):
 
 
 def filter_ans(ans, mesh, x, y):
+    
+    
+    ans_out = []
     for i in range(len(ans)):  # loop over possible answers
 
         # check for (invalid) complex answers
@@ -72,8 +78,26 @@ def filter_ans(ans, mesh, x, y):
             # check that answer is within range of meshgrid + some tolerance:
         if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
             and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
-            return ans[i]           
-    return None  # no valid result found = return first
+            ans_out.append(ans[i])
+
+    # if you don't find a point inside the grid:
+    if len(ans_out) == 0 and len(ans) > 0:
+        dists = []
+        for i in range(len(ans)):
+            dists.append(compute_closest_distance(ans, mesh, x, y))
+        
+        max_index = np.argmax(dists)
+        ans_out.append(ans[max_index])
+
+    return ans_out  
+
+
+def compute_closest_distance(ans, mesh, x, y):
+    
+    dx = np.max(mesh[0] - ans[x], 0, ans[x] - mesh[1]) # find dx
+    dy = np.min(mesh[3] - ans[y], 0, ans[y] - mesh[4]) # find dy
+    return np.sqrt(np.power(dx, 2) + np.pow(dy, 2)) # return distance
+
 
 def dis(x,y,x1,y1,x2,y2,x3,y3,x4,y4):
 
