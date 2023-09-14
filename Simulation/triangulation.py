@@ -84,7 +84,7 @@ def filter_ans(ans, mesh, x, y):
     if len(ans_out) == 0 and len(ans) > 0:
         dists = []
         for i in range(len(ans)):
-            if (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
+            if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
                 continue
 
             dists.append(compute_closest_distance(ans[i], mesh, x, y))
