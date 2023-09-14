@@ -55,7 +55,7 @@ def filter_ans(ans, mesh, x, y):
     for i in range(len(ans)): # loop over possible answers
 
         # check for (invalid) complex answers
-        if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][x]):
+        if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][y]):
             continue
         # check that answer is within range of meshgrid:
         if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1] 

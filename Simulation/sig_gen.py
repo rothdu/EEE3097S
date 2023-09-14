@@ -15,7 +15,7 @@ def generate_signal(test_location, mic_location, signal_frequency, sample_freque
     wavelength = constant.speed_of_sound/signal_frequency
     # wavelength of sinusoidal input
 
-    sample_length = (sample_length//wavelength) * wavelength
+    sample_length = (sample_length//wavelength + 1) * wavelength
 
     time = np.linspace(0, sample_length, int(sample_length*sample_frequency))
     # create signal, initially fill array with time values
