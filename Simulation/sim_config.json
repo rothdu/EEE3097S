@@ -1,0 +1,80 @@
+{
+    "frequency": {
+        "global": true,
+        "value": 280
+    },
+    "points": {
+        "global": true,
+        "random": true,
+        "number": 10,
+        "points": [
+            [
+                0.6, 
+                0.3
+            ]
+        ]
+    },
+    "mics": {
+        "global": true
+    },
+    "tests": [
+        {
+            "frequency": {
+                "global": true
+            },
+            "mics": {
+                "global": false,
+                "mics": [
+                    [
+                        0,
+                        0
+                    ],
+                    [
+                        0.8,
+                        0
+                    ],
+                    [
+                        0,
+                        0.5
+                    ],
+                    [
+                        0.8,
+                        0.5
+                    ]
+                ]
+            },
+            "points": {
+                "global": true
+            }
+        },
+        {
+            "frequency": {
+                "global": true
+            },
+            "mics": {
+                "global": false,
+                "mics": [
+                    [
+                        0,
+                        0
+                    ],
+                    [
+                        0.2,
+                        0
+                    ],
+                    [
+                        0.6,
+                        0
+                    ],
+                    [
+                        0.8,
+                        0
+                    ]
+                ]
+            },
+            "points": {
+                "global": true
+            }
+        }
+    ]
+}
