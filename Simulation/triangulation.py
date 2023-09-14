@@ -1,6 +1,7 @@
 import numpy as np
 import sympy as sym
 import matplotlib.pyplot as plt
+import scipy.constants as constant
 from numpy import arange, meshgrid, sqrt
 
 #   triangulate(param,mesh):
@@ -31,14 +32,24 @@ def triangulate(param, mesh):
                 sym.sqrt((x-param[8])**2+(y-param[9])**2), param[10])
 
     # solves each hyperbolic pair
-    ans1 = filter_ans(sym.solve([e1, e2]), mesh, x, y)
-    ans2 = filter_ans(sym.solve([e1, e3]), mesh, x, y)
-    ans3 = filter_ans(sym.solve([e2, e3]), mesh, x, y)
-
+    ans1 = filter_ans(sym.solve([e1, e2]), mesh, x, y,inline)
+    ans2 = filter_ans(sym.solve([e1, e3]), mesh, x, y,inline)
+    ans3 = filter_ans(sym.solve([e2, e3]), mesh, x, y,inline)
+    ans = [ans1,ans2,ans3]
     # finds midpoint of each pair
-    xe = (ans1[x]+ans2[x]+ans3[x])/3
-    ye = (ans1[y]+ans2[y]+ans3[y])/3
-
+    xe = 0
+    ye = 0
+    countx = 0
+    county = 0
+    for i in ans:
+        if(ans!=None):
+            xe = xe + ans[x]
+            ye = ye + ans[y]
+    if(ans1 == None and ans2==None and ans3==None):
+        xe = -10
+        ye = -10
+    else:
+        
     # defines a meshgrid of x and y, to produce meshgrids h1, h2, h3 for plotting
     x, y = meshgrid(arange(mesh[0], mesh[1], mesh[2]),
                     arange(mesh[3], mesh[4], mesh[5]))
@@ -58,33 +69,19 @@ def filter_ans(ans, mesh, x, y):
         # check for (invalid) complex answers
         if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][y]):
             continue
-        # check that answer is within range of meshgrid:
+            # check that answer is within range of meshgrid + some tolerance:
         if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
-                and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
-            return ans[i]
+            and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
+            return ans[i]           
     return None  # no valid result found = return first
 
+def dis(x,y,x1,y1,x2,y2,x3,y3,x4,y4):
 
-def main():
-    # sample program for source position 40,40 with mics at corners of 100x100 grid
-    # finds the estimated position and plots all the curves and points on one plot
-    xs, ys = 40, 40
+    d1 = sqrt((x-x1)**2+(y-y1)**2)
+    d2 = sqrt((x-x2)**2+(y-y2)**2)
+    d3 = sqrt((x-x3)**2+(y-y3)**2)
+    d4 = sqrt((x-x4)**2+(y-y4)**2)
+    return d1 - d2, d1 - d3, d1 - d4
 
-    t1 = 40*sqrt(2)-20*sqrt(13)
-    t2 = 40*sqrt(2)-60*sqrt(2)
-    t3 = 40*sqrt(2)-20*sqrt(13)
+def distancesize(x): return (x * constant.speed_of_sound)
 
-    param = [0, 0, 0, 100, t1, 100, 100, t2, 100, 0, t3]
-    mesh = [0, 100, 1, 0, 100, 1]
-    xe, ye, x, y, h1, h2, h3 = triangulate(param, mesh)
-
-    plt.contour(x, y, h1, [0])
-    plt.contour(x, y, h2, [0])
-    plt.contour(x, y, h3, [0])
-    plt.plot(xs, ys, 'co', markersize=10)
-    plt.plot(xe, ye, 'r.', markersize=10)
-    plt.show()
-
-
-if __name__ == "__main__":
-    main()
