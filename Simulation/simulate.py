@@ -78,7 +78,7 @@ def tests(config, noisetype="none"):
                     act_tdoas.append(ref_t_d - t_d)
 
             # add signal noise
-            if noisetype in "gpigippgipigigpipg":  # check for valid noise inputs
+            if noisetype in "gpigippgipigigpipg" and noisetype != "":  # check for valid noise inputs
                 noisy = True
                 for signal_index in range(len(signals)):
                     signal = signals[signal_index]
