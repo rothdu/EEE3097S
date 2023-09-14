@@ -21,9 +21,9 @@ def main():
 
     # tests(config) # no noise tests
     tests(config, "i")  # gaussian noise tests
-    # tests(config, "p")  # gaussian noise tests
-    # tests(config, "i")  # gaussian noise tests
-    # tests(config, "")   # gaussian noise tests
+    tests(config, "p")  # gaussian noise tests
+    tests(config, "i")  # gaussian noise tests
+    tests(config, "")   # gaussian noise tests
 
 
 # noisetype can be any combination of "g", "p", and "i", e.g., "gpi", "ip", "g", etc.
@@ -49,6 +49,8 @@ def tests(config, noisetype="none"):
 
         # debug
         count = 0
+
+        noisy = False
 
         # loop over the set of test points
         for point in test["points"]["points"]:
@@ -77,6 +79,7 @@ def tests(config, noisetype="none"):
 
             # add signal noise
             if noisetype in "gpigippgipigigpipg":  # check for valid noise inputs
+                noisy = True
                 for signal_index in range(len(signals)):
                     signal = signals[signal_index]
                     signal_length = signal.shape[0] / 44100
@@ -148,7 +151,7 @@ def tests(config, noisetype="none"):
 
         # run the gui
         gui.run(test["frequency"]["value"], mics, x_test,
-                y_test, x_est, y_est, 0.8, 0.5, 10, all_est_tdoas, all_act_tdoas, parabolas, x, y, False)
+                y_test, x_est, y_est, 0.8, 0.5, 10, all_est_tdoas, all_act_tdoas, parabolas, x, y, noisy, noisetype)
 
         print("finnished first")
 

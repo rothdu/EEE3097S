@@ -42,6 +42,8 @@ mic_co_ords = None
 
 freq = None
 
+noise_t = ""
+
 
 # plot test points
 def plot_test_points():
@@ -139,9 +141,9 @@ def plot_all_points():
         for k in range(0, 3):
             ax.contour(x_tri, y_tri, parabolas[i][k], [0], colors=["black"])
         ax.scatter(
-            x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=100)
+            x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=150)
         ax.scatter(
-            x_r, y_r, label=f'Resultant Point {i+1}', color=['red'], marker='.', s=100)
+            x_r, y_r, label=f'Resultant Point {i+1}', color=['red'], marker='.', s=150)
         ax.set_title(f"Test Point {i+1}")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
@@ -341,7 +343,7 @@ def ss_tri():
 
 
 def sim_param_s():
-    global test_dir, freq, mic_co_ords
+    global test_dir, freq, mic_co_ords,noise_t
 
     file_name = test_dir + "/Test_Parameters.txt"
     with open(file_name, 'w') as file:
@@ -350,6 +352,7 @@ def sim_param_s():
         for i in range(1, 5):
             file.write(
                 "Mic" + str(i) + ": (" + str(mic_co_ords[i-1][0]) + "," + str(mic_co_ords[i-1][1]) + ")\n")
+        file.write("Noise Type: " + noise_t + "\n")
 
 
 # create directories for test results
@@ -394,7 +397,7 @@ def rand_par(x_max):
 # complete gui function for main sim program
 
 
-def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in, num_points_in, est_toa_in, act_toa_in, parabolas_in, x_tri_in, y_tri_in, noise_in):
+def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in, num_points_in, est_toa_in, act_toa_in, parabolas_in, x_tri_in, y_tri_in, noise_in, noise_t_in):
     # set all necessary global variables
     global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points, est_toa, act_toa, x_tri, y_tri, freq, mic_co_ords, noise
     x_test = x_test_in
@@ -412,6 +415,7 @@ def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max
     freq = freq_in
     mic_co_ords = mic_co_ords_in
     noise = noise_in
+    noise_t = noise_t_in
 
     # create the relevant directories
     create_dir()
