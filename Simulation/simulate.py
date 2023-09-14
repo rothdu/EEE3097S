@@ -70,7 +70,7 @@ def tests(config, noisetype="none"):
                 # sig, tdoa = sig_gen.generate_signal(
                 #     point, mic_loc, test["frequency"]["value"], amplitude=6)
                 sig, tdoa = wav_signal.gen_delay(
-                    refsig, point, mic_loc, 1000, sample_rate, 1000)
+                    refsig, point, mic_loc, 1000, sample_rate, 200)
                 signals.append(sig)
                 if ref_tdoa == None:
                     ref_tdoa = tdoa
@@ -151,7 +151,7 @@ def tests(config, noisetype="none"):
 
         # run the gui
         gui.run(test["frequency"]["value"], mics, x_test,
-                y_test, x_est, y_est, 0.8, 0.5, 2, all_est_tdoas, all_act_tdoas, parabolas, x, y, False)
+                y_test, x_est, y_est, 0.8, 0.5, 10, all_est_tdoas, all_act_tdoas, parabolas, x, y, False)
 
         print("finnished first")
 

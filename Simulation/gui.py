@@ -226,14 +226,14 @@ def ss_toa_val():
     mic2_est = [row[1] for row in est_toa]
     mic3_est = [row[2] for row in est_toa]
 
-    # print(len(points))
+    print(len(points))
 
-    # print(len(mic1_act))
-    # print(len(mic2_act))
-    # print(len(mic3_act))
-    # print(len(mic1_est))
-    # print(len(mic2_est))
-    # print(len(mic3_est))
+    print(len(mic1_act))
+    print(len(mic2_act))
+    print(len(mic3_act))
+    print(len(mic1_est))
+    print(len(mic2_est))
+    print(len(mic3_est))
 
     data = {
         'Points': points,
