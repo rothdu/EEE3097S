@@ -18,7 +18,14 @@ def main():
     # populate global points randomly
     if config["points"]["random"]:
         populate_random_points(config["points"], 0.8, 0.5)
+    
+    tests(config)
 
+    #tests(config, "g")
+
+    
+
+def tests(config, noisetype="none"):
     # loop over specified test parameters
     for test in config["tests"]:
 
@@ -62,6 +69,27 @@ def main():
                     ref_tdoa = tdoa
                 else:
                     act_tdoas.append(ref_tdoa - tdoa)
+
+            
+            if noisetype in "gpi":
+                i = 0 
+                for signal in signals:
+                    signal_length = signal.shape[0] / 44100
+                    sig_dir = signal_procesing.gen_dir("signals")
+
+                    i += 1
+                    plt.plot(signal)
+                    plt.savefig(sig_dir + str(i))
+                    plt.close()
+
+                    signal = signal_procesing.add_noise(noisetype,
+                                                        signal, signal_length, 44100)
+                    
+                    i += 1
+                    plt.plot(signal)
+                    plt.savefig(sig_dir + str(i))
+                    plt.close()
+                    
 
             # initialise list to store tdoas
             est_tdoas = []
@@ -122,6 +150,7 @@ def main():
         # run the gui
         gui.run(test["frequency"]["value"], mics, x_test,
                 y_test, x_est, y_est, 0.8, 0.5, 2, all_est_tdoas, all_act_tdoas, parabolas, x, y, False)
+
 
 
 # adds a random point to a list

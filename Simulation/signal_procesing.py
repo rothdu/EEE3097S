@@ -125,20 +125,20 @@ def plot_sig_noise(t, sig, noisey, n_name, dir, comment):
         plt.savefig(dir + "/Signal_" + n_name + "_" + comment + ".jpg")
 
 
-def add_noise(type, t, sig, duration, sample_rate, new, comment):
-    dir = gen_dir(new)
-    if type == "p":
-        noisey = sig + gen_pink_n(duration, sample_rate)
-        plot_sig_noise(t, sig, noisey, "Pink", dir, comment)
-        return noisey
-    elif type == "g":
-        noisey = sig + gen_gaussian_n(duration, sample_rate)
-        plot_sig_noise(t, sig, noisey, "Gaussian", dir, comment)
-        return noisey
-    elif type == "i":
-        noisey = sig + gen_impulse_n(duration, sample_rate)
-        plot_sig_noise(t, sig, noisey, "Impulse", dir, comment)
-        return noisey
+def add_noise(noisetype, sig, duration, sample_rate):
+    #dir = gen_dir(new)
+    if  "p" in noisetype:
+        sig = sig + gen_pink_n(duration, sample_rate)
+        #plot_sig_noise(t, sig, noisey, "Pink", dir, comment)
+        #return noisey
+    if "g" in noisetype:
+        sig = sig + gen_gaussian_n(duration, sample_rate)
+        #plot_sig_noise(t, sig, noisey, "Gaussian", dir, comment)
+        #return noisey
+    if "i" in noisetype:
+        sig = sig + gen_impulse_n(duration, sample_rate)
+        #plot_sig_noise(t, sig, noisey, "Impulse", dir, comment)
+    return sig
 
 
 # main function to test gui.py
