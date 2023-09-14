@@ -13,15 +13,9 @@ from numpy import arange, meshgrid, sqrt
 #   ct1,ct2,ct3 = Speed constant*TDOA for each mic ref-helper mic pair
 #
 #   The helper mic coords and constant can be in any order as long as their x, y and ct correspond
-<<<<<<< HEAD
 #
-#   mesh is an array of the form: [delta, xlow, xhigh, ylow, yhigh]
-#
-=======
-#   
 #   mesh is an array of the form: [xlow, xhigh, xdelta, ylow, yhigh, ydelta]
-# 
->>>>>>> ad67066ba95ef5773c01a17044937e4b11ae5ca9
+#
 #   Returns xe,ye,x,y,h1,h2,h3: estimated source position, base meshgrid, hyperbolic meshgrid for each mic pair
 
 
@@ -46,9 +40,8 @@ def triangulate(param, mesh):
     ye = (ans1[0][y]+ans2[0][y]+ans3[0][y])/3
 
     # defines a meshgrid of x and y, to produce meshgrids h1, h2, h3 for plotting
-<<<<<<< HEAD
-    x, y = meshgrid(arange(mesh[1], mesh[2], mesh[0]),
-                    arange(mesh[3], mesh[4], mesh[0]))
+    x, y = meshgrid(arange(mesh[0], mesh[1], mesh[2]),
+                    arange(mesh[3], mesh[4], mesh[5]))
     h1 = sqrt((x-param[0])**2+(y-param[1])**2) - \
         sqrt((x-param[2])**2+(y-param[3])**2)-param[4]
     h2 = sqrt((x-param[0])**2+(y-param[1])**2) - \
@@ -57,14 +50,7 @@ def triangulate(param, mesh):
         sqrt((x-param[8])**2+(y-param[9])**2)-param[10]
 
     return sym.N(xe), sym.N(ye), x, y, h1, h2, h3
-=======
-    x, y = meshgrid( arange(mesh[0], mesh[1], mesh[2]), arange(mesh[3], mesh[4], mesh[5]))
-    h1 = sqrt((x-param[0])**2+(y-param[1])**2)-sqrt((x-param[2])**2+(y-param[3])**2)-param[4]
-    h2 = sqrt((x-param[0])**2+(y-param[1])**2)-sqrt((x-param[5])**2+(y-param[6])**2)-param[7]
-    h3 = sqrt((x-param[0])**2+(y-param[1])**2)-sqrt((x-param[8])**2+(y-param[9])**2)-param[10]
->>>>>>> ad67066ba95ef5773c01a17044937e4b11ae5ca9
 
-    return sym.N(xe) , sym.N(ye), x, y, h1, h2, h3 
 
 def main():
     # sample program for source position 40,40 with mics at corners of 100x100 grid
@@ -75,21 +61,15 @@ def main():
     t2 = 40*sqrt(2)-60*sqrt(2)
     t3 = 40*sqrt(2)-20*sqrt(13)
 
-<<<<<<< HEAD
     param = [0, 0, 0, 100, t1, 100, 100, t2, 100, 0, t3]
-    xe, ye, x, y, h1, h2, h3 = triangulate(param)
+    mesh = [0, 100, 1, 0, 100, 1]
+    xe, ye, x, y, h1, h2, h3 = triangulate(param, mesh)
 
-=======
-    param = [0,0,0,100,t1,100,100,t2,100,0,t3]
-    mesh = [0,100,1,0,100,1]
-    xe, ye, x, y, h1, h2, h3 = triangulate(param,mesh)
-    
->>>>>>> ad67066ba95ef5773c01a17044937e4b11ae5ca9
-    plt.contour(x,y,h1,[0])
-    plt.contour(x,y,h2,[0])
-    plt.contour(x,y,h3,[0])
-    plt.plot(xs,ys,'co',markersize=10)
-    plt.plot(xe,ye,'r.',markersize=10)
+    plt.contour(x, y, h1, [0])
+    plt.contour(x, y, h2, [0])
+    plt.contour(x, y, h3, [0])
+    plt.plot(xs, ys, 'co', markersize=10)
+    plt.plot(xe, ye, 'r.', markersize=10)
     plt.show()
 
 

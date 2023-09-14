@@ -158,22 +158,41 @@ def plot_all_points():
 
 
 def ss_toa_err():
-    global x_max, est_toa, act_toa, num_points
+    global x_max, est_toa, act_toa, num_points, noise
 
     points = np.linspace(1, num_points, num_points)
 
     err = np.empty((num_points, 3))
+    p_f = np.array([True] * num_points, dtype=bool)
+
+    if noise:
+        acc = 3.0
+    else:
+        acc = 1.0
+
     for p in range(0, num_points):
         for m in range(0, 3):
-            err[p][m] = str(round((act_toa[p][m]-est_toa[p][m]) /
-                                  act_toa[p][m]*100, 5))
+            if act_toa[p][m] != 0.0:
+                err[p][m] = str(
+                    round((act_toa[p][m]-est_toa[p][m])/act_toa[p][m]*100, 5))
+            else:
+                err[p][m] = str(round(est_toa[p][m]/100, 5))
+            if p_f[p] == True and err[p][m] and err[p][m] > acc:
+                p_f[p] = False
+
+    p_f_print = []
+    for i in range(0, num_points):
+        if p_f[i]:
+            p_f_print.append("Pass")
+        else:
+            p_f_print.append("Fail")
 
     data = {
         'Points': points,
-        'Mic Pair 1 Pecentage Error': err[:0],
-        'Mic Pair 2 Pecentage Error': err[:1],
-        'Mic Pair 3 Pecentage Error': err[:2]
-
+        'Mic Pair 1 Pecentage Error': err[:, 0],
+        'Mic Pair 2 Pecentage Error': err[:, 1],
+        'Mic Pair 3 Pecentage Error': err[:, 2],
+        'Pass/Fail': p_f_print
     }
 
     # Create a DataFrame
@@ -199,14 +218,21 @@ def ss_toa_val():
 
     points = np.linspace(1, num_points, num_points)
 
+    mic1_act = [row[0] for row in act_toa]
+    mic2_act = [row[1] for row in act_toa]
+    mic3_act = [row[2] for row in act_toa]
+    mic1_est = [row[0] for row in act_toa]
+    mic2_est = [row[1] for row in act_toa]
+    mic3_est = [row[2] for row in act_toa]
+
     data = {
         'Points': points,
-        'Mic Pair 1 Actual ': act_toa[:, 0],
-        'Mic Pair 1 Estimated ': est_toa[:, 0],
-        'Mic Pair 2 Actual ': act_toa[:, 1],
-        'Mic Pair 2 Estimated ': est_toa[:, 1],
-        'Mic Pair 3 Actual ': act_toa[:, 2],
-        'Mic Pair 3 Estimated ': est_toa[:, 2],
+        'Mic Pair 1 Actual ': mic1_act,
+        'Mic Pair 1 Estimated ': mic2_est,
+        'Mic Pair 2 Actual ': mic2_act,
+        'Mic Pair 2 Estimated ': mic2_est,
+        'Mic Pair 3 Actual ': mic3_act,
+        'Mic Pair 3 Estimated ': mic3_est,
     }
 
     # Create a DataFrame
@@ -401,7 +427,7 @@ def main():
 
     param = [0, 0, 0, 100, t1, 100, 100, t2, 100, 0, t3]
     xe, ye, x, y, h1, h2, h3 = triangulation.triangulate(
-        param, [1, 0, 100, 0, 100])
+        param, [0, 100, 1, 0, 100, 1])
     parabolas = np.empty((num_points_in, 3), dtype=object)
     temp = [h1, h2, h3]
     for i in range(0, num_points_in):

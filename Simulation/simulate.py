@@ -2,8 +2,14 @@ import json
 import random
 import matplotlib.pyplot as plt
 import scipy.constants as constant
-import gcc_phat, gui, sig_gen, signal_procesing, triangulation
+import gcc_phat
+import gui
+import sig_gen
+import signal_procesing
+import triangulation
 import pyroomacoustics
+import numpy as np
+
 
 def main():
     with open("Simulation/sim_config.json", "r") as read_file:
@@ -20,66 +26,96 @@ def main():
         for key in test:
             populate_test_from_global(config, test, key)
 
+        # initialise resultantant arrays
+        x_est = []
+        y_est = []
+        x_tri = []
+        y_tri = []
+        all_est_tdoas = []
+        all_act_tdoas = []
+        parabolas = []
+        all_points = []
+
+        # debug
+        count = 0
 
         # loop over the set of test points
         for point in test["points"]["points"]:
-            
+
+            # debug
+            count += 1
+            if count == 3:
+                break
 
             # initialise list to store the signals
             signals = []
 
+            # inititialize list to store the actual tdoas
+            act_tdoas = []
+
             # generate unique signal for each mic
             for mic_loc in test["mics"]["mics"]:
-                signals.append(sig_gen.generate_signal(point, mic_loc, test["frequency"]["value"], amplitude=6))
-        
+                # generate signal and add to signals array as well as act_tdoa array
+                sig, tdoa = sig_gen.generate_signal(
+                    point, mic_loc, test["frequency"]["value"], amplitude=6)
+                signals.append(sig)
+                act_tdoas.append(tdoa)
 
-            
             # initialise list to store tdoas
-            tdoas = []
+            est_tdoas = []
 
             # use gcc-phat on pairs of signals, using first signal as reference
             for i in range(1, len(signals)):
-                tau = pyroomacoustics.experimental.localization.tdoa(signals[0], signals[i], fs=44100)
-                tdoas.append(tau)
-
+                tau = pyroomacoustics.experimental.localization.tdoa(
+                    signals[0], signals[i], fs=44100)
+                est_tdoas.append(tau)
 
             # convert tdoas to distances for triangulation
-            distancesize = lambda x: x* constant.speed_of_sound
-            dists = list(map(distancesize, tdoas))
+            def distancesize(x): return x * constant.speed_of_sound
+            dists = list(map(distancesize, est_tdoas))
 
             # for debugging
-            print(point)
-            print(tdoas)
-
+            # print(point)
+            # print(tdoas)
 
             mics = test["mics"]["mics"]
 
             # pick out parameters for triangulation
-            tri_param = [mics[0][0], mics[0][1], mics[1][0], mics[1][1], dists[0], 
+            tri_param = [mics[0][0], mics[0][1], mics[1][0], mics[1][1], dists[0],
                          mics[2][0], mics[2][1], dists[1], mics[3][0], mics[3][1], dists[2]]
             tri_mesh = [0, 0.8, 0.8/100, 0, 0.5, 0.5/100]
 
             # perform triangulation
-            xe, ye, x, y, h1, h2, h3 = triangulation.triangulate(tri_param,tri_mesh)
-            xs, ys = point[0], point[1]
-    
+            xe, ye, x, y, h1, h2, h3 = triangulation.triangulate(
+                tri_param, tri_mesh)
+
+            # append resulting arrays
+            x_est.append(xe)
+            y_est.append(ye)
+            # x_tri.append(x)
+            # y_tri.append(y)
+            all_est_tdoas.append(est_tdoas)
+            all_act_tdoas.append(act_tdoas)
+            parabolas.append([h1, h2, h3])
+            all_points.append(point)
+
+            # xs, ys = point[0], point[1]
+
             # plot triangulation stuff
-            plt.contour(x,y,h1,[0])
-            plt.contour(x,y,h2,[0])
-            plt.contour(x,y,h3,[0])
-            plt.plot(xs,ys,'co',markersize=10)
-            plt.plot(xe,ye,'r.',markersize=10)
-            plt.show()
+            # plt.contour(x,y,h1,[0])
+            # plt.contour(x,y,h2,[0])
+            # plt.contour(x,y,h3,[0])
+            # plt.plot(xs,ys,'co',markersize=10)
+            # plt.plot(xe,ye,'r.',markersize=10)
+            # plt.show()
 
-            
+        print("running gui")
+        print(all_points)
+        x_test = [row[0] for row in all_points]
+        y_test = [row[1] for row in all_points]
+        gui.run(test["frequency"]["value"], mics, x_test,
+                y_test, x_est, y_est, 0.8, 0.5, 2, all_est_tdoas, all_act_tdoas, parabolas, x, y, False)
 
-            
-
-
-
-
-
-        
 
 # adds a random point to a list
 def add_point(points, max_x, max_y):
@@ -91,9 +127,11 @@ def populate_random_points(points_dict, max_x, max_y):
     for i in range(points_dict["number"] - len(points_dict["points"])):
         add_point(points_dict["points"], max_x, max_y)
 
+
 def populate_test_from_global(config, test, key):
     if test[key]["global"]:
         test[key] = config[key]
+
 
 if __name__ == "__main__":
     main()
