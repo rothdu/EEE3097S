@@ -9,8 +9,9 @@ import gcc_phat
 import triangulation
 
 
-def gen_delay(signal, test_location, mic_location, signal_frequency, sample_frequency, n_samples):
-    distance = np.sqrt((test_location[0] - mic_location[0])**2 + (test_location[1] - mic_location[1])**2)
+def gen_delay(signal, test_location, mic_location, sample_frequency, n_samples):
+    distance = np.sqrt(
+        (test_location[0] - mic_location[0])**2 + (test_location[1] - mic_location[1])**2)
     # distance from test loc to mic loc
 
     # wavelength = constant.speed_of_sound/signal_frequency
@@ -26,15 +27,15 @@ def gen_delay(signal, test_location, mic_location, signal_frequency, sample_freq
     #                     wavelength * samples_per_wavelength)
     # tdoa = sample_offset * 1/sample_frequency
 
-    tdoa = distance/constant.speed_of_sound
-    sample_offset = int(tdoa // (1/sample_frequency))
+    t_d = distance/constant.speed_of_sound
+    sample_offset = int(round(t_d / (1/sample_frequency)))
 
     zeros = np.zeros(sample_offset)
     signal = np.concatenate((zeros, signal))
 
     signal = signal[0: n_samples]
     # print(signal)
-    return signal, tdoa
+    return signal, t_d
 
 
 def load_signal(path):
@@ -46,22 +47,22 @@ def main():
 
     sample_rate, ref_sig = load_signal("Simulation/sound.wav")
 
-    xs, ys = 0.6,0.3
+    xs, ys = 0.6, 0.3
     sig1, tdoa1 = gen_delay(ref_sig, [xs, ys], [
-                          0.0, 0.0], 250, sample_rate, 1000)
+        0.0, 0.0], 250, sample_rate, 1000)
     sig2, tdoa2 = gen_delay(ref_sig, [xs, ys], [
-                          0.8, 0.0], 250, sample_rate, 1000)
+        0.8, 0.0], 250, sample_rate, 1000)
     sig3, tdoa3 = gen_delay(ref_sig, [xs, ys], [
-                          0.8, 0.5], 250, sample_rate, 1000)
+        0.8, 0.5], 250, sample_rate, 1000)
     sig4, tdoa4 = gen_delay(ref_sig, [xs, ys], [
-                          0.0, 0.5], 250, sample_rate, 1000)
-    
+        0.0, 0.5], 250, sample_rate, 1000)
+
     tdoa = [tdoa1-tdoa2, tdoa1 - tdoa3, tdoa1-tdoa4]
     print(tdoa)
 
-    tau1 = gcc_phat.gcc_phat(sig1,sig2,sample_rate)
-    tau2 = gcc_phat.gcc_phat(sig1,sig3,sample_rate)
-    tau3 = gcc_phat.gcc_phat(sig1,sig4,sample_rate)
+    tau1 = gcc_phat.gcc_phat(sig1, sig2, sample_rate)
+    tau2 = gcc_phat.gcc_phat(sig1, sig3, sample_rate)
+    tau3 = gcc_phat.gcc_phat(sig1, sig4, sample_rate)
 
     tau = [tau1, tau2, tau3]
     print(tau)
@@ -91,6 +92,7 @@ def main():
     # plt.plot(sig1)
     # plt.plot(sig2)
     # plt.show()
+
 
 if __name__ == "__main__":
     main()

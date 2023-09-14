@@ -126,18 +126,18 @@ def plot_sig_noise(t, sig, noisey, n_name, dir, comment):
 
 
 def add_noise(noisetype, sig, duration, sample_rate):
-    #dir = gen_dir(new)
-    if  "p" in noisetype:
+    # dir = gen_dir(new)
+    if "p" in noisetype:
         sig = sig + gen_pink_n(duration, sample_rate)
-        #plot_sig_noise(t, sig, noisey, "Pink", dir, comment)
-        #return noisey
+        # plot_sig_noise(t, sig, noisey, "Pink", dir, comment)
+        # return noisey
     if "g" in noisetype:
         sig = sig + gen_gaussian_n(duration, sample_rate)
-        #plot_sig_noise(t, sig, noisey, "Gaussian", dir, comment)
-        #return noisey
+        # plot_sig_noise(t, sig, noisey, "Gaussian", dir, comment)
+        # return noisey
     if "i" in noisetype:
         sig = sig + gen_impulse_n(duration, sample_rate)
-        #plot_sig_noise(t, sig, noisey, "Impulse", dir, comment)
+        # plot_sig_noise(t, sig, noisey, "Impulse", dir, comment)
     return sig
 
 

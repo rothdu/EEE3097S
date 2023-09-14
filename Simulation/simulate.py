@@ -21,8 +21,10 @@ def main():
         populate_random_points(config["points"], 0.8, 0.5)
 
     # tests(config) # no noise tests
-
-    tests(config, "")  # gaussian noise tests
+    tests(config, "g")  # gaussian noise tests
+    tests(config, "p")  # gaussian noise tests
+    tests(config, "i")  # gaussian noise tests
+    tests(config, "")   # gaussian noise tests
 
 
 # noisetype can be any combination of "g", "p", and "i", e.g., "gpi", "ip", "g", etc.
@@ -47,7 +49,7 @@ def tests(config, noisetype="none"):
         all_points = []
 
         # debug
-        count = 0
+        count_tests = 0
 
         # loop over the set of test points
         for point in test["points"]["points"]:
@@ -61,7 +63,7 @@ def tests(config, noisetype="none"):
             signals = []
 
             # inititialize list to store the actual tdoas
-            ref_tdoa = None
+            count = 0
             act_tdoas = []
 
             # generate unique signal for each mic
@@ -69,13 +71,14 @@ def tests(config, noisetype="none"):
                 # generate signal and add to signals array as well as act_tdoa array
                 # sig, tdoa = sig_gen.generate_signal(
                 #     point, mic_loc, test["frequency"]["value"], amplitude=6)
-                sig, tdoa = wav_signal.gen_delay(
-                    refsig, point, mic_loc, 1000, sample_rate, 200)
+                sig, t_d = wav_signal.gen_delay(
+                    refsig, point, mic_loc, sample_rate, 1000)
                 signals.append(sig)
-                if ref_tdoa == None:
-                    ref_tdoa = tdoa
+                if count == 0:
+                    ref_t_d = t_d
+                    count += 1
                 else:
-                    act_tdoas.append(ref_tdoa - tdoa)
+                    act_tdoas.append(ref_t_d - t_d)
 
             # add signal noise
             if noisetype in "gpigippgipigigpipg":  # check for valid noise inputs
@@ -91,7 +94,7 @@ def tests(config, noisetype="none"):
 
             # use gcc-phat on pairs of signals, using first signal as reference
             for i in range(1, len(signals)):
-                tau = pyroomacoustics.experimental.localization.tdoa(
+                tau = gcc_phat.gcc_phat(
                     signals[0], signals[i], fs=sample_rate)
                 est_tdoas.append(tau)
             print("point = " + str(point))
@@ -113,7 +116,7 @@ def tests(config, noisetype="none"):
             # pick out parameters for triangulation
             tri_param = [mics[0][0], mics[0][1], mics[1][0], mics[1][1], dists[0],
                          mics[2][0], mics[2][1], dists[1], mics[3][0], mics[3][1], dists[2]]
-            tri_mesh = [-0.5, 1.5, 2/100, -0.5, 1.5, 2/100]
+            tri_mesh = [0, 0.8, 0.8/100, 0, 0.5, 0.5/100]
 
             # perform triangulation
             xe, ye, x, y, h1, h2, h3 = triangulation.triangulate(

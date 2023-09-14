@@ -31,9 +31,9 @@ def triangulate(param, mesh):
                 sym.sqrt((x-param[8])**2+(y-param[9])**2), param[10])
 
     # solves each hyperbolic pair
-    ans1 = sym.solve([e1, e2]), mesh, x, y
-    ans2 = sym.solve([e1, e3]), mesh, x, y
-    ans3 = sym.solve([e2, e3]), mesh, x, y
+    ans1 = filter_ans(sym.solve([e1, e2]), mesh, x, y)
+    ans2 = filter_ans(sym.solve([e1, e3]), mesh, x, y)
+    ans3 = filter_ans(sym.solve([e2, e3]), mesh, x, y)
 
     # finds midpoint of each pair
     xe = (ans1[x]+ans2[x]+ans3[x])/3
@@ -64,8 +64,6 @@ def filter_ans(ans, mesh, x, y):
             return ans[i]
     return None  # no valid result found = return first
 
-def todis(tdoa):
-    return
 
 def main():
     # sample program for source position 40,40 with mics at corners of 100x100 grid

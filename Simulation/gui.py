@@ -91,12 +91,12 @@ def plot_test_result_points():
     # Create a scatter plot for each pair of test and resultant points
     for i in range(len(x_test)):
         plt.scatter(
-            x_test[i], y_test[i], label=f'Test Point {i+1}', color=colours[i], marker='s', s=50)
+            x_test[i], y_test[i], label=f'Actual Point {i+1}', color=colours[i], marker='s', s=50)
         plt.scatter(
-            x_res[i], y_res[i], label=f'Resultant Point {i+1}', color=colours[i], marker='o', s=50)
+            x_res[i], y_res[i], label=f'Estimated Point {i+1}', color=colours[i], marker='o', s=50)
 
-    legend_handles = [Line2D([0], [0], marker='s', color='w', label='Test Points', markersize=10, markerfacecolor='black'), Line2D(
-        [0], [0], marker='o', color='w', label='Resultant Points', markersize=10, markerfacecolor='black')]
+    legend_handles = [Line2D([0], [0], marker='s', color='w', label='Actual Points', markersize=10, markerfacecolor='black'), Line2D(
+        [0], [0], marker='o', color='w', label='Estimated Points', markersize=10, markerfacecolor='black')]
 
     # Add labels and a legend
     plt.xlabel('X')
@@ -115,12 +115,12 @@ def plot_all_points():
     # Create and save individual scatter plots
     for i, (x_t, y_t, x_r, y_r) in enumerate(zip(x_test, y_test, x_res, y_res)):
         plt.figure(figsize=(6, 4))
-        plt.scatter(
-            x_t, y_t, label=f'Test Point {i+1}', color=colours[i], marker='s', s=50)
-        plt.scatter(
-            x_r, y_r, label=f'Resultant Point {i+1}', color=colours[i], marker='o', s=50)
         for k in range(0, 3):
             plt.contour(x_tri, y_tri, parabolas[i][k], [0], colors=["black"])
+        plt.scatter(
+            x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=100)
+        plt.scatter(
+            x_r, y_r, label=f'Estimated Point {i+1}', color=['red'], marker='.', s=100)
         plt.xlim(0, x_max)
         plt.ylim(0, y_max)
         plt.grid(True)
@@ -136,12 +136,12 @@ def plot_all_points():
     fig, axs = plt.subplots(2, 5, figsize=(20, 8))
 
     for i, (x_t, y_t, x_r, y_r, ax) in enumerate(zip(x_test, y_test, x_res, y_res, axs.ravel())):
-        ax.scatter(
-            x_t, y_t, label=f'Test Point {i+1}', color=colours[i], marker='s', s=50)
-        ax.scatter(
-            x_r, y_r, label=f'Resultant Point {i+1}', color=colours[i], marker='o', s=50)
         for k in range(0, 3):
             ax.contour(x_tri, y_tri, parabolas[i][k], [0], colors=["black"])
+        ax.scatter(
+            x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=100)
+        ax.scatter(
+            x_r, y_r, label=f'Resultant Point {i+1}', color=['red'], marker='.', s=100)
         ax.set_title(f"Test Point {i+1}")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
