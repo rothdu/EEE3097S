@@ -113,7 +113,7 @@ def tests(config, noisetype="none"):
             # pick out parameters for triangulation
             tri_param = [mics[0][0], mics[0][1], mics[1][0], mics[1][1], dists[0],
                          mics[2][0], mics[2][1], dists[1], mics[3][0], mics[3][1], dists[2]]
-            tri_mesh = [0, 0.8, 0.8/100, 0, 0.5, 0.5/100]
+            tri_mesh = [-0.5, 1.5, 2/100, -0.5, 1.5, 2/100]
 
             # perform triangulation
             xe, ye, x, y, h1, h2, h3 = triangulation.triangulate(

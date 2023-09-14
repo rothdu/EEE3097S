@@ -27,7 +27,7 @@ def gen_delay(signal, test_location, mic_location, signal_frequency, sample_freq
     # tdoa = sample_offset * 1/sample_frequency
 
     tdoa = distance/constant.speed_of_sound
-    sample_offset = int(tdoa // 1/sample_frequency)
+    sample_offset = int(tdoa // (1/sample_frequency))
 
     zeros = np.zeros(sample_offset)
     signal = np.concatenate((zeros, signal))
