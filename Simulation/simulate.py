@@ -21,10 +21,10 @@ def main():
         populate_random_points(config["points"], 0.8, 0.5)
 
     # tests(config) # no noise tests
-    tests(config, "g")  # gaussian noise tests
-    tests(config, "p")  # gaussian noise tests
     tests(config, "i")  # gaussian noise tests
-    tests(config, "")   # gaussian noise tests
+    # tests(config, "p")  # gaussian noise tests
+    # tests(config, "i")  # gaussian noise tests
+    # tests(config, "")   # gaussian noise tests
 
 
 # noisetype can be any combination of "g", "p", and "i", e.g., "gpi", "ip", "g", etc.
@@ -49,16 +49,12 @@ def tests(config, noisetype="none"):
         all_points = []
 
         # debug
-        count_tests = 0
+        count = 0
 
         # loop over the set of test points
         for point in test["points"]["points"]:
 
             # debug
-            # count += 1
-            # if count == 3:
-            #     break
-
             # initialise list to store the signals
             signals = []
 
@@ -85,7 +81,6 @@ def tests(config, noisetype="none"):
                 for signal_index in range(len(signals)):
                     signal = signals[signal_index]
                     signal_length = signal.shape[0] / 44100
-
                     signals[signal_index] = signal_procesing.add_noise(noisetype,
                                                                        signal, signal_length, 44100)
 

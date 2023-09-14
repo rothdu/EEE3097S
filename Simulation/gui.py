@@ -118,9 +118,9 @@ def plot_all_points():
         for k in range(0, 3):
             plt.contour(x_tri, y_tri, parabolas[i][k], [0], colors=["black"])
         plt.scatter(
-            x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=100)
+            x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=150)
         plt.scatter(
-            x_r, y_r, label=f'Estimated Point {i+1}', color=['red'], marker='.', s=100)
+            x_r, y_r, label=f'Estimated Point {i+1}', color=['red'], marker='.', s=150)
         plt.xlim(0, x_max)
         plt.ylim(0, y_max)
         plt.grid(True)
