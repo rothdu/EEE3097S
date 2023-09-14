@@ -218,12 +218,16 @@ def ss_toa_val():
 
     points = np.linspace(1, num_points, num_points)
 
+    # convert to correct format for displaying
     mic1_act = [row[0] for row in act_toa]
     mic2_act = [row[1] for row in act_toa]
     mic3_act = [row[2] for row in act_toa]
     mic1_est = [row[0] for row in est_toa]
     mic2_est = [row[1] for row in est_toa]
     mic3_est = [row[2] for row in est_toa]
+
+    print(mic1_act)
+    print(mic1_est)
 
     data = {
         'Points': points,
@@ -248,6 +252,11 @@ def ss_toa_val():
     # Convert the DataFrame to rows and add them to the worksheet
     for row in dataframe_to_rows(df, index=False, header=True):
         worksheet.append(row)
+
+    # Apply number formatting to columns with 4 decimal places
+    # for col in worksheet.iter_cols(min_col=2, max_col=worksheet.max_column):
+    #     for cell in col[1:]:
+    #         cell.number_format = '0.0000'
 
     # Save the Excel file
     workbook.save(excel_file)
