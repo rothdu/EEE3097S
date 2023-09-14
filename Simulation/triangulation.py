@@ -84,7 +84,10 @@ def filter_ans(ans, mesh, x, y):
     if len(ans_out) == 0 and len(ans) > 0:
         dists = []
         for i in range(len(ans)):
-            dists.append(compute_closest_distance(ans, mesh, x, y))
+            if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][y]):
+                continue
+
+            dists.append(compute_closest_distance(ans[i], mesh, x, y))
         
         max_index = np.argmax(dists)
         ans_out.append(ans[max_index])
@@ -92,10 +95,10 @@ def filter_ans(ans, mesh, x, y):
     return ans_out  
 
 
-def compute_closest_distance(ans, mesh, x, y):
+def compute_closest_distance(ans_indexed, mesh, x, y):
     
-    dx = np.max(mesh[0] - ans[x], 0, ans[x] - mesh[1]) # find dx
-    dy = np.min(mesh[3] - ans[y], 0, ans[y] - mesh[4]) # find dy
+    dx = np.max(mesh[0] - ans_indexed[x], 0, ans_indexed[x] - mesh[1]) # find dx
+    dy = np.min(mesh[3] - ans_indexed[y], 0, ans_indexed[y] - mesh[4]) # find dy
     return np.sqrt(np.power(dx, 2) + np.pow(dy, 2)) # return distance
 
 
