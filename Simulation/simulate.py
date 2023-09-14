@@ -19,9 +19,9 @@ def main():
     if config["points"]["random"]:
         populate_random_points(config["points"], 0.8, 0.5)
     
-    tests(config)
+    #tests(config)
 
-    #tests(config, "g")
+    tests(config, "g")
 
     
 
@@ -72,24 +72,15 @@ def tests(config, noisetype="none"):
 
             
             if noisetype in "gpi":
-                i = 0 
-                for signal in signals:
+                for signal_index in range(len(signals)):
+                    signal = signals[signal_index]
                     signal_length = signal.shape[0] / 44100
-                    sig_dir = signal_procesing.gen_dir("signals")
 
-                    i += 1
-                    plt.plot(signal)
-                    plt.savefig(sig_dir + str(i))
-                    plt.close()
 
-                    signal = signal_procesing.add_noise(noisetype,
+                    signals[signal_index] = signal_procesing.add_noise(noisetype,
                                                         signal, signal_length, 44100)
                     
-                    i += 1
-                    plt.plot(signal)
-                    plt.savefig(sig_dir + str(i))
-                    plt.close()
-                    
+            
 
             # initialise list to store tdoas
             est_tdoas = []
@@ -106,6 +97,7 @@ def tests(config, noisetype="none"):
 
             # for debugging
             # print(point)
+            print(act_tdoas)
             print(est_tdoas)
 
             mics = test["mics"]["mics"]
