@@ -98,8 +98,8 @@ def tests(config, noisetype="none"):
 
             # for debugging
             # print(point)
-            print(act_tdoas)
-            print(est_tdoas)
+            # print(act_tdoas)
+            # print(est_tdoas)
 
             mics = test["mics"]["mics"]
 
