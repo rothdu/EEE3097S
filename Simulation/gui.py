@@ -273,7 +273,7 @@ def ss_toa_val():
 
 
 def ss_tri():
-    global x_test, y_test, x_res, y_res, noise
+    global x_test, y_test, x_res, y_res, noise, x_max, y_max
 
     points = np.linspace(1, num_points, num_points)
 
@@ -282,8 +282,8 @@ def ss_tri():
     x_p_f = np.array([True] * num_points, dtype=bool)
     y_p_f = np.array([True] * num_points, dtype=bool)
     for i in range(0, num_points):
-        x_err.append(round((x_test[i]-x_res[i])/x_test[i]*100, 5))
-        y_err.append(round((y_test[i]-y_res[i])/y_test[i]*100, 5))
+        x_err.append(round((x_test[i]-x_res[i])/x_max*100, 5))
+        y_err.append(round((y_test[i]-y_res[i])/y_max*100, 5))
         if noise == True:
             acc = 5.0
         else:

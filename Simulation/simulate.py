@@ -22,7 +22,7 @@ def main():
     # tests(config) # no noise tests
     tests(config, "i")  # gaussian noise tests
     tests(config, "p")  # gaussian noise tests
-    tests(config, "i")  # gaussian noise tests
+    tests(config, "g")  # gaussian noise tests
     tests(config, "")   # gaussian noise tests
 
 
