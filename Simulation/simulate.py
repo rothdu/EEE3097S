@@ -96,7 +96,8 @@ def tests(config, noisetype="none"):
                 est_tdoas.append(tau)
             print("point = " + str(point))
             print("estimated tdoas = " + str(est_tdoas))
-            print("actual tdoas = " + str(est_tdoas))
+            print("actual tdoas = " + str(act_tdoas))
+            print()
 
             # convert tdoas to distances for triangulation
             def distancesize(x): return x * constant.speed_of_sound
