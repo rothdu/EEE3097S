@@ -19,12 +19,13 @@ def main():
     if config["points"]["random"]:
         populate_random_points(config["points"], 0.8, 0.5)
     
-    #tests(config)
+    #tests(config) # no noise tests
 
-    tests(config, "g")
+    tests(config, "g") # gaussian noise tests
 
     
-
+# noisetype can be any combination of "g", "p", and "i", e.g., "gpi", "ip", "g", etc.
+# the output signal for the tests will use all of the specified noise types
 def tests(config, noisetype="none"):
     # loop over specified test parameters
     for test in config["tests"]:
@@ -70,8 +71,8 @@ def tests(config, noisetype="none"):
                 else:
                     act_tdoas.append(ref_tdoa - tdoa)
 
-            
-            if noisetype in "gpi":
+            # add signal noise
+            if noisetype in "gpigippgipigigpipg" : #check for valid noise inputs
                 for signal_index in range(len(signals)):
                     signal = signals[signal_index]
                     signal_length = signal.shape[0] / 44100
@@ -131,7 +132,10 @@ def tests(config, noisetype="none"):
             # plt.plot(xe, ye, 'r.', markersize=10)
             # plt.show()
 
+        
         print("running gui")
+
+        # debugging:
         print(all_act_tdoas)
         print(all_est_tdoas)
 
