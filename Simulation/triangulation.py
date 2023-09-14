@@ -76,7 +76,7 @@ def filter_ans(ans, mesh, x, y):
         if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
             continue
             # check that answer is within range of meshgrid + some tolerance:
-        if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
+        elif (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
             and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
             ans_out.append(ans[i])
 
@@ -86,8 +86,8 @@ def filter_ans(ans, mesh, x, y):
         for i in range(len(ans)):
             if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
                 continue
-
-            dists.append(compute_closest_distance(ans[i], mesh, x, y))
+            else:
+                dists.append(compute_closest_distance(ans[i], mesh, x, y))
         
         max_index = np.argmax(dists)
         ans_out.append(ans[max_index])
