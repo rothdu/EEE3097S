@@ -78,7 +78,7 @@ def main():
 
             # for debugging
             # print(point)
-            # print(tdoas)
+            print(est_tdoas)
 
             mics = test["mics"]["mics"]
 

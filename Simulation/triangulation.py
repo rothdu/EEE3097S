@@ -31,13 +31,13 @@ def triangulate(param, mesh):
                 sym.sqrt((x-param[8])**2+(y-param[9])**2), param[10])
 
     # solves each hyperbolic pair
-    ans1 = sym.solve([e1, e2])
-    ans2 = sym.solve([e1, e3])
-    ans3 = sym.solve([e2, e3])
+    ans1 = filter_ans(sym.solve([e1, e2]), mesh, x, y)
+    ans2 = filter_ans(sym.solve([e1, e3]), mesh, x, y)
+    ans3 = filter_ans(sym.solve([e2, e3]), mesh, x, y)
 
     # finds midpoint of each pair
-    xe = (ans1[0][x]+ans2[0][x]+ans3[0][x])/3
-    ye = (ans1[0][y]+ans2[0][y]+ans3[0][y])/3
+    xe = (ans1[x]+ans2[x]+ans3[x])/3
+    ye = (ans1[y]+ans2[y]+ans3[y])/3
 
     # defines a meshgrid of x and y, to produce meshgrids h1, h2, h3 for plotting
     x, y = meshgrid(arange(mesh[0], mesh[1], mesh[2]),
@@ -50,6 +50,18 @@ def triangulate(param, mesh):
         sqrt((x-param[8])**2+(y-param[9])**2)-param[10]
 
     return sym.N(xe), sym.N(ye), x, y, h1, h2, h3
+
+def filter_ans(ans, mesh, x, y):
+    for i in range(len(ans)): # loop over possible answers
+
+        # check for (invalid) complex answers
+        if np.iscomplex(ans[i][x]) or np.iscomplex(ans[i][x]):
+            continue
+        # check that answer is within range of meshgrid:
+        if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1] 
+            and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
+            return ans[i]
+    return None # no valid result found = return first       
 
 
 def main():
