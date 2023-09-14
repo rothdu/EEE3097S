@@ -73,21 +73,24 @@ def filter_ans(ans, mesh, x, y):
     for i in range(len(ans)):  # loop over possible answers
 
         # check for (invalid) complex answers
-        if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
+        try:
+            if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
+                and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
+                ans_out.append(ans[i])
+        except TypeError:
             continue
-            # check that answer is within range of meshgrid + some tolerance:
-        elif (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
-            and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
-            ans_out.append(ans[i])
 
     # if you don't find a point inside the grid:
     if len(ans_out) == 0 and len(ans) > 0:
         dists = []
         for i in range(len(ans)):
-            if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
+            try:
+                if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
+                    continue
+                else:
+                    dists.append(compute_closest_distance(ans[i], mesh, x, y))
+            except TypeError:
                 continue
-            else:
-                dists.append(compute_closest_distance(ans[i], mesh, x, y))
         
         max_index = np.argmax(dists)
         ans_out.append(ans[max_index])
