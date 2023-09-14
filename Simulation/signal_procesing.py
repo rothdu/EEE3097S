@@ -50,7 +50,7 @@ def gen_pink_n(duration, sample_rate):
     num_samples = int(duration * sample_rate)
     pink_noise = np.random.randn(num_samples)
     b, a = signal.butter(1, 1 / (sample_rate / 2), btype='low')
-    return cn.powerlaw_psd_gaussian(1, int(0.01*44100))/2
+    return cn.powerlaw_psd_gaussian(1, num_samples)/2
 
 # Function to generate impulse noise
 
