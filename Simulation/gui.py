@@ -26,6 +26,8 @@ est_tri = None
 x_tri = None
 y_tri = None
 
+noise = None
+
 x_max = 0
 y_max = 0
 num_points = 0
@@ -155,7 +157,44 @@ def plot_all_points():
 # generate xlsx for time of arrival results
 
 
-def ss_toa():
+def ss_toa_err():
+    global x_max, est_toa, act_toa, num_points
+
+    points = np.linspace(1, num_points, num_points)
+
+    err = np.empty((num_points, 3))
+    for p in range(0, num_points):
+        for m in range(0, 3):
+            err[p][m] = str(round((act_toa[p][m]-est_toa[p][m]) /
+                                  act_toa[p][m]*100, 5))
+
+    data = {
+        'Points': points,
+        'Mic Pair 1 Pecentage Error': err[:0],
+        'Mic Pair 2 Pecentage Error': err[:1],
+        'Mic Pair 3 Pecentage Error': err[:2]
+
+    }
+
+    # Create a DataFrame
+    df = pd.DataFrame(data)
+
+    # Specify the Excel file name
+    excel_file = test_dir + '/toa_err.xlsx'
+
+    # Create a new Excel workbook
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+
+    # Convert the DataFrame to rows and add them to the worksheet
+    for row in dataframe_to_rows(df, index=False, header=True):
+        worksheet.append(row)
+
+    # Save the Excel file
+    workbook.save(excel_file)
+
+
+def ss_toa_val():
     global x_max, est_toa, act_toa, num_points
 
     points = np.linspace(1, num_points, num_points)
@@ -174,7 +213,7 @@ def ss_toa():
     df = pd.DataFrame(data)
 
     # Specify the Excel file name
-    excel_file = test_dir + '/toa_results.xlsx'
+    excel_file = test_dir + '/toa_cal.xlsx'
 
     # Create a new Excel workbook
     workbook = openpyxl.Workbook()
@@ -191,24 +230,43 @@ def ss_toa():
 
 
 def ss_tri():
-    global x_test, y_test, x_res, y_res
+    global x_test, y_test, x_res, y_res, noise
 
     points = np.linspace(1, num_points, num_points)
 
+    x_err = []
+    y_err = []
+    p_f = []
+    for i in range(0, num_points):
+        x_err.append(round((x_test[i]-x_res[i])/x_test[i]*100, 5))
+        y_err.append(round((y_test[i]-y_res[i])/y_test[i]*100, 5))
+        if noise == True:
+            acc = 5.0
+        else:
+            acc = 2.0
+        if x_err[i] <= acc:
+            p_f.append("Passed")
+        else:
+            p_f.append("failed")
+
+        x_err[i] = str(x_err[i])
+        y_err[i] = str(y_err[i])
+
     act = []
     est = []
-    dist_err = []
     for i in range(0, num_points):
         act.append('(' + str(x_test[i]) + ',' + str(y_test[i]) + ')')
         est.append('(' + str(x_res[i]) + ',' + str(y_res[i]) + ')')
-        dist_err.append(
-            math.sqrt((x_test[i] - x_res[i])**2 + (y_test[i] - y_res[i])**2))
+        # dist_err.append(
+        #     math.sqrt((x_test[i] - x_res[i])**2 + (y_test[i] - y_res[i])**2))
 
     data = {
         'Points': points,
         'Actual Co-Ord': act,
         'Estimated Co-Ord': est,
-        'Error Distance ': dist_err,
+        'X Percentage Error': x_err,
+        'Y Percentage Error': y_err,
+        'Pass/Fail': p_f
     }
 
     # Create a DataFrame
@@ -285,9 +343,9 @@ def rand_par(x_max):
 # complete gui function for main sim program
 
 
-def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in, num_points_in, est_toa_in, act_toa_in, parabolas_in, x_tri_in, y_tri_in):
+def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in, num_points_in, est_toa_in, act_toa_in, parabolas_in, x_tri_in, y_tri_in, noise_in):
     # set all necessary global variables
-    global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points, est_toa, act_toa, x_tri, y_tri, freq, mic_co_ords
+    global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points, est_toa, act_toa, x_tri, y_tri, freq, mic_co_ords, noise
     x_test = x_test_in
     y_test = y_test_in
     x_res = x_res_in
@@ -302,6 +360,7 @@ def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max
     y_tri = y_tri_in
     freq = freq_in
     mic_co_ords = mic_co_ords_in
+    noise = noise_in
 
     # create the relevant directories
     create_dir()
@@ -313,7 +372,8 @@ def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max
     plot_all_points()
 
     # create xlsx file with toa results
-    ss_toa()
+    ss_toa_err()
+    ss_toa_val()
 
     # create xlsx file with tri results
     ss_tri()
@@ -359,7 +419,7 @@ def main():
             act_toa_in[r][c] = c
 
     run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in,
-        num_points_in, est_toa_in, act_toa_in, parabolas, x, y)
+        num_points_in, est_toa_in, act_toa_in, parabolas, x, y, True)
 
 
 # Check if the script is being run as the main program
