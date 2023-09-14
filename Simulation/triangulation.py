@@ -99,7 +99,7 @@ def compute_closest_distance(ans_indexed, mesh, x, y):
     
     dx = np.max([mesh[0] - ans_indexed[x], 0, ans_indexed[x] - mesh[1]]) # find dx
     dy = np.min([mesh[3] - ans_indexed[y], 0, ans_indexed[y] - mesh[4]]) # find dy
-    return np.sqrt(dx**2 + dy**2) # return distance
+    return np.power((np.power(dx, 2) + np.power(dy, 2)), 0.5) # return distance
 
 
 def dis(x,y,x1,y1,x2,y2,x3,y3,x4,y4):
