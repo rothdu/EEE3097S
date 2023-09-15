@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pyroomacoustics
 
 def main():
     fs = 1000
@@ -22,9 +21,9 @@ def main():
 
     #signal_2 = np.roll(signal_1, 500)
     
-    tdoa = pyroomacoustics.experimental.localization.tdoa(signal_2, signal_1, fs=1000)
+    # tdoa = pyroomacoustics.experimental.localization.tdoa(signal_2, signal_1, fs=1000)
 
-    print(tdoa)
+    # print(tdoa)
 
 
 if __name__ == "__main__":

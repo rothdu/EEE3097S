@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import math
 from matplotlib.lines import Line2D
 import openpyxl
 from openpyxl.utils.dataframe import dataframe_to_rows
@@ -93,9 +92,9 @@ def plot_test_result_points():
     # Create a scatter plot for each pair of test and resultant points
     for i in range(len(x_test)):
         plt.scatter(
-            x_test[i], y_test[i], label=f'Actual Point {i+1}', color=colours[i], marker='s', s=50)
+            x_test[i], y_test[i], label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=150)
         plt.scatter(
-            x_res[i], y_res[i], label=f'Estimated Point {i+1}', color=colours[i], marker='o', s=50)
+            x_res[i], y_res[i], label=f'Estimated Point {i+1}', color=['red'], marker='.', s=150)
 
     legend_handles = [Line2D([0], [0], marker='s', color='w', label='Actual Points', markersize=10, markerfacecolor='black'), Line2D(
         [0], [0], marker='o', color='w', label='Estimated Points', markersize=10, markerfacecolor='black')]
@@ -105,6 +104,8 @@ def plot_test_result_points():
     plt.ylabel('Y')
     plt.title('Resultant & Test Points on Grid')
     plt.legend(handles=legend_handles)
+    plt.xlim(0, x_max)
+    plt.ylim(0, y_max)
 
     # Save the figure as a JPEG file
     plt.savefig(test_dir + '/test_result_points.jpg', dpi=300)
@@ -122,7 +123,7 @@ def plot_all_points():
         plt.scatter(
             x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=150)
         plt.scatter(
-            x_r, y_r, label=f'Estimated Point {i+1}', color=['red'], marker='.', s=150)
+            x_r, y_r, label=f'Estimated Point {i+1}', color=['red'], marker='.', s=200)
         plt.xlim(0, x_max)
         plt.ylim(0, y_max)
         plt.grid(True)
@@ -135,7 +136,8 @@ def plot_all_points():
         plt.close()
 
     # Create and display all scatter plots together in one figure using subplots
-    fig, axs = plt.subplots(2, 5, figsize=(20, 8))
+    fig, axs = plt.subplots(2, 5, figsize=(
+        20, 6), dpi=500, subplot_kw={'aspect': 'equal'})
 
     for i, (x_t, y_t, x_r, y_r, ax) in enumerate(zip(x_test, y_test, x_res, y_res, axs.ravel())):
         for k in range(0, 3):
@@ -143,10 +145,12 @@ def plot_all_points():
         ax.scatter(
             x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=150)
         ax.scatter(
-            x_r, y_r, label=f'Resultant Point {i+1}', color=['red'], marker='.', s=150)
+            x_r, y_r, label=f'Resultant Point {i+1}', color=['red'], marker='.', s=200)
         ax.set_title(f"Test Point {i+1}")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
+        ax.set_xlim(0, x_max)
+        ax.set_ylim(0, y_max)
         ax.legend()
         ax.grid(True)
 
@@ -155,6 +159,8 @@ def plot_all_points():
     # Save the final subplotted scatter plots as an image
     plt.savefig(test_dir + "/subplotted_point_results.jpg",
                 bbox_inches="tight")
+
+    plt.close(fig)
 
 # generate xlsx for time of arrival results
 
@@ -221,21 +227,12 @@ def ss_toa_val():
     points = np.linspace(1, num_points, num_points)
 
     # convert to correct format for displaying
-    mic1_act = [row[0] for row in act_toa]
-    mic2_act = [row[1] for row in act_toa]
-    mic3_act = [row[2] for row in act_toa]
-    mic1_est = [row[0] for row in est_toa]
-    mic2_est = [row[1] for row in est_toa]
-    mic3_est = [row[2] for row in est_toa]
-
-    print(len(points))
-
-    print(len(mic1_act))
-    print(len(mic2_act))
-    print(len(mic3_act))
-    print(len(mic1_est))
-    print(len(mic2_est))
-    print(len(mic3_est))
+    mic1_act = [1000*row[0] for row in act_toa]
+    mic2_act = [1000*row[1] for row in act_toa]
+    mic3_act = [1000*row[2] for row in act_toa]
+    mic1_est = [1000*row[0] for row in est_toa]
+    mic2_est = [1000*row[1] for row in est_toa]
+    mic3_est = [1000*row[2] for row in est_toa]
 
     data = {
         'Points': points,
@@ -343,7 +340,7 @@ def ss_tri():
 
 
 def sim_param_s():
-    global test_dir, freq, mic_co_ords,noise_t
+    global test_dir, freq, mic_co_ords, noise_t
 
     file_name = test_dir + "/Test_Parameters.txt"
     with open(file_name, 'w') as file:
@@ -399,7 +396,7 @@ def rand_par(x_max):
 
 def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in, num_points_in, est_toa_in, act_toa_in, parabolas_in, x_tri_in, y_tri_in, noise_in, noise_t_in):
     # set all necessary global variables
-    global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points, est_toa, act_toa, x_tri, y_tri, freq, mic_co_ords, noise
+    global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points, est_toa, act_toa, x_tri, y_tri, freq, mic_co_ords, noise, noise_t
     x_test = x_test_in
     y_test = y_test_in
     x_res = x_res_in
