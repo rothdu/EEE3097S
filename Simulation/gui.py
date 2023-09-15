@@ -136,7 +136,8 @@ def plot_all_points():
         plt.close()
 
     # Create and display all scatter plots together in one figure using subplots
-    fig, axs = plt.subplots(2, 5, figsize=(20, 8))
+    fig, axs = plt.subplots(2, 5, figsize=(
+        20, 6), dpi=500, subplot_kw={'aspect': 'equal'})
 
     for i, (x_t, y_t, x_r, y_r, ax) in enumerate(zip(x_test, y_test, x_res, y_res, axs.ravel())):
         for k in range(0, 3):
@@ -226,12 +227,12 @@ def ss_toa_val():
     points = np.linspace(1, num_points, num_points)
 
     # convert to correct format for displaying
-    mic1_act = [row[0] for row in act_toa]
-    mic2_act = [row[1] for row in act_toa]
-    mic3_act = [row[2] for row in act_toa]
-    mic1_est = [row[0] for row in est_toa]
-    mic2_est = [row[1] for row in est_toa]
-    mic3_est = [row[2] for row in est_toa]
+    mic1_act = [1000*row[0] for row in act_toa]
+    mic2_act = [1000*row[1] for row in act_toa]
+    mic3_act = [1000*row[2] for row in act_toa]
+    mic1_est = [1000*row[0] for row in est_toa]
+    mic2_est = [1000*row[1] for row in est_toa]
+    mic3_est = [1000*row[2] for row in est_toa]
 
     data = {
         'Points': points,

@@ -52,19 +52,20 @@ def tests(config, noisetype="none"):
         all_points = []
 
         # debug
-        count = 0
+        count_mic_conf = 1
 
         noisy = False
 
         # loop over the set of test points
         for point in test["points"]["points"]:
 
+            count = 0
+
             # debug
             # initialise list to store the signals
             signals = []
 
             # inititialize list to store the actual tdoas
-            count = 0
             act_tdoas = []
 
             # generate unique signal for each mic
@@ -122,7 +123,7 @@ def tests(config, noisetype="none"):
             print("actual point = " + str(point))
             print("estimated tdoas = " + str(est_tdoas))
             print("actual tdoas = " + str(act_tdoas))
-            print("estimated point = ([" + str(xe) + "," + str(ye) + "])")
+            print("estimated point = [" + str(xe) + "," + str(ye) + "]")
             print()
 
             # append resulting arrays
@@ -155,7 +156,8 @@ def tests(config, noisetype="none"):
         gui.run(test["frequency"]["value"], mics, x_test,
                 y_test, x_est, y_est, 0.8, 0.5, 10, all_est_tdoas, all_act_tdoas, hyperbolas, x, y, noisy, noisetype)
 
-    print("Mic Configuration Fully Tested")
+        print("\nMic Configuration " + str(count_mic_conf) + " Tested\n")
+        count_mic_conf += 1
 
 
 # adds a random point to a list
