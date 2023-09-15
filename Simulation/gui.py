@@ -105,6 +105,8 @@ def plot_test_result_points():
     plt.ylabel('Y')
     plt.title('Resultant & Test Points on Grid')
     plt.legend(handles=legend_handles)
+    plt.xlim(0, x_max)
+    plt.ylim(0, y_max)
 
     # Save the figure as a JPEG file
     plt.savefig(test_dir + '/test_result_points.jpg', dpi=300)
@@ -122,7 +124,7 @@ def plot_all_points():
         plt.scatter(
             x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=150)
         plt.scatter(
-            x_r, y_r, label=f'Estimated Point {i+1}', color=['red'], marker='.', s=150)
+            x_r, y_r, label=f'Estimated Point {i+1}', color=['red'], marker='.', s=200)
         plt.xlim(0, x_max)
         plt.ylim(0, y_max)
         plt.grid(True)
@@ -143,7 +145,7 @@ def plot_all_points():
         ax.scatter(
             x_t, y_t, label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=150)
         ax.scatter(
-            x_r, y_r, label=f'Resultant Point {i+1}', color=['red'], marker='.', s=150)
+            x_r, y_r, label=f'Resultant Point {i+1}', color=['red'], marker='.', s=200)
         ax.set_title(f"Test Point {i+1}")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
@@ -155,6 +157,8 @@ def plot_all_points():
     # Save the final subplotted scatter plots as an image
     plt.savefig(test_dir + "/subplotted_point_results.jpg",
                 bbox_inches="tight")
+
+    plt.close(fig)
 
 # generate xlsx for time of arrival results
 
@@ -343,7 +347,7 @@ def ss_tri():
 
 
 def sim_param_s():
-    global test_dir, freq, mic_co_ords,noise_t
+    global test_dir, freq, mic_co_ords, noise_t
 
     file_name = test_dir + "/Test_Parameters.txt"
     with open(file_name, 'w') as file:
