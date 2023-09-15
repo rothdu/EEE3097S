@@ -148,6 +148,8 @@ def plot_all_points():
         ax.set_title(f"Test Point {i+1}")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
+        ax.set_xlim(0, x_max)
+        ax.set_ylim(0, y_max)
         ax.legend()
         ax.grid(True)
 
@@ -230,15 +232,6 @@ def ss_toa_val():
     mic1_est = [row[0] for row in est_toa]
     mic2_est = [row[1] for row in est_toa]
     mic3_est = [row[2] for row in est_toa]
-
-    print(len(points))
-
-    print(len(mic1_act))
-    print(len(mic2_act))
-    print(len(mic3_act))
-    print(len(mic1_est))
-    print(len(mic2_est))
-    print(len(mic3_est))
 
     data = {
         'Points': points,
@@ -402,7 +395,7 @@ def rand_par(x_max):
 
 def run(freq_in, mic_co_ords_in, x_test_in, y_test_in, x_res_in, y_res_in, x_max_in, y_max_in, num_points_in, est_toa_in, act_toa_in, parabolas_in, x_tri_in, y_tri_in, noise_in, noise_t_in):
     # set all necessary global variables
-    global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points, est_toa, act_toa, x_tri, y_tri, freq, mic_co_ords, noise
+    global x_test, y_test, x_res, y_res, x_mics, y_mics, x_max, y_max, parabolas, num_points, est_toa, act_toa, x_tri, y_tri, freq, mic_co_ords, noise, noise_t
     x_test = x_test_in
     y_test = y_test_in
     x_res = x_res_in

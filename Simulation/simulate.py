@@ -17,10 +17,17 @@ def main():
         populate_random_points(config["points"], 0.8, 0.5)
 
     # tests(config) # no noise tests
-    tests(config, "i")  # gaussian noise tests
-    tests(config, "p")  # gaussian noise tests
-    tests(config, "g")  # gaussian noise tests
-    tests(config, "")   # gaussian noise tests
+    print("Starting Gaussian Noise Test\n")
+    tests(config, "g")
+
+    print("Starting Impulse Noise Test\n")
+    tests(config, "i")
+
+    print("Starting Pink Noise Test\n")
+    tests(config, "p")
+
+    print("Starting No Noise Test\n")
+    tests(config)
 
 
 # noisetype can be any combination of "g", "p", and "i", e.g., "gpi", "ip", "g", etc.
@@ -91,10 +98,6 @@ def tests(config, noisetype="none"):
                 tau = gcc_phat.gcc_phat(
                     signals[0], signals[i], fs=sample_rate)
                 est_tdoas.append(tau)
-            print("point = " + str(point))
-            print("estimated tdoas = " + str(est_tdoas))
-            print("actual tdoas = " + str(act_tdoas))
-            print()
 
             # convert tdoas to distances for triangulation
             def distancesize(x): return x * constant.speed_of_sound
@@ -116,6 +119,12 @@ def tests(config, noisetype="none"):
             xe, ye, x, y, h1, h2, h3 = triangulation.triangulate(
                 tri_param, tri_mesh)
 
+            print("actual point = " + str(point))
+            print("estimated tdoas = " + str(est_tdoas))
+            print("actual tdoas = " + str(act_tdoas))
+            print("estimated point = ([" + str(xe) + "," + str(ye) + "])")
+            print()
+
             # append resulting arrays
             x_est.append(xe)
             y_est.append(ye)
@@ -136,11 +145,7 @@ def tests(config, noisetype="none"):
             # plt.plot(xe, ye, 'r.', markersize=10)
             # plt.show()
 
-        print("running gui")
-
-        # debugging:
-        print(all_act_tdoas)
-        print(all_est_tdoas)
+        print("Running GUI")
 
         # convert points to correct form for gui parameters
         x_test = [row[0] for row in all_points]
@@ -150,7 +155,7 @@ def tests(config, noisetype="none"):
         gui.run(test["frequency"]["value"], mics, x_test,
                 y_test, x_est, y_est, 0.8, 0.5, 10, all_est_tdoas, all_act_tdoas, hyperbolas, x, y, noisy, noisetype)
 
-        print("finnished first")
+    print("Mic Configuration Fully Tested")
 
 
 # adds a random point to a list

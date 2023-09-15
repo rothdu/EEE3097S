@@ -82,7 +82,7 @@ def filter_ans(ans, mesh, x, y):
                 and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
                 ans_out.append(ans[i])
         except TypeError:
-            print("Caught error with complex value")
+            print("Complex Value Error")
             continue
 
     # if you don't find a point inside the grid:
@@ -96,14 +96,14 @@ def filter_ans(ans, mesh, x, y):
                     ans_out.append(ans[1])
                     return ans_out
         except TypeError:
-            print("Caught error with complex value")
+            print("Complex Value Error")
 
         dists = []
         for i in range(len(ans)):
             try:
                 if ans[i][x] > 0 or True:
                     dists.append(compute_closest_distance(ans[i], mesh, x, y))
-                    print(dists)
+                    #print(dists)
             except TypeError:
                 continue
 
