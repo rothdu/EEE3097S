@@ -1,15 +1,13 @@
 import numpy as np
 
 import matplotlib.pyplot as plt
-import signal_procesing
 from scipy.io import wavfile
 import scipy.constants as constant
-import os
 import gcc_phat
 import triangulation
 
 
-def gen_delay(signal, test_location, mic_location, sample_frequency, n_samples):
+def gen_delay(signal, test_location, mic_location, sample_rate, n_samples):
     distance = np.sqrt(
         (test_location[0] - mic_location[0])**2 + (test_location[1] - mic_location[1])**2)
     # distance from test loc to mic loc
@@ -28,7 +26,7 @@ def gen_delay(signal, test_location, mic_location, sample_frequency, n_samples):
     # tdoa = sample_offset * 1/sample_frequency
 
     t_d = distance/constant.speed_of_sound
-    sample_offset = int(round(t_d / (1/sample_frequency)))
+    sample_offset = int(round(t_d / (1/sample_rate)))
 
     zeros = np.zeros(sample_offset)
     signal = np.concatenate((zeros, signal))
@@ -46,37 +44,54 @@ def load_signal(path):
 def main():
 
     sample_rate, ref_sig = load_signal("Simulation/sound.wav")
+    samples = 4410
+    xs, ys = 0.7260392094496311, 0.23545789793008925
+    # xs, ys = 0.6,0.3
 
-    xs, ys = 0.6, 0.3
-    sig1, tdoa1 = gen_delay(ref_sig, [xs, ys], [
-        0.0, 0.0], 250, sample_rate, 1000)
-    sig2, tdoa2 = gen_delay(ref_sig, [xs, ys], [
-        0.8, 0.0], 250, sample_rate, 1000)
-    sig3, tdoa3 = gen_delay(ref_sig, [xs, ys], [
-        0.8, 0.5], 250, sample_rate, 1000)
-    sig4, tdoa4 = gen_delay(ref_sig, [xs, ys], [
-        0.0, 0.5], 250, sample_rate, 1000)
+    inline = True
+
+    if(inline):
+
+        sig1, tdoa1 = gen_delay(ref_sig, [xs, ys], [
+            0.0, 0.0], sample_rate, samples)
+        sig2, tdoa2 = gen_delay(ref_sig, [xs, ys], [
+            0.27, 0.0], sample_rate, samples)
+        sig3, tdoa3 = gen_delay(ref_sig, [xs, ys], [
+            0.54, 0.0], sample_rate, samples)
+        sig4, tdoa4 = gen_delay(ref_sig, [xs, ys], [
+            0.8, 0.0], sample_rate, samples)
+        
+
+    else:
+        
+        sig1, tdoa1 = gen_delay(ref_sig, [xs, ys], [
+            0.0, 0.0], sample_rate, samples)
+        sig2, tdoa2 = gen_delay(ref_sig, [xs, ys], [
+            0.8, 0.0], sample_rate, samples)
+        sig3, tdoa3 = gen_delay(ref_sig, [xs, ys], [
+            0.8, 0.5], sample_rate, samples)
+        sig4, tdoa4 = gen_delay(ref_sig, [xs, ys], [
+            0.0, 0.5], sample_rate, samples)
+        
+
 
     tdoa = [tdoa1-tdoa2, tdoa1 - tdoa3, tdoa1-tdoa4]
     print(tdoa)
 
-    tau1 = gcc_phat.gcc_phat(sig1, sig2, sample_rate)
-    tau2 = gcc_phat.gcc_phat(sig1, sig3, sample_rate)
-    tau3 = gcc_phat.gcc_phat(sig1, sig4, sample_rate)
-
-    tau = [tau1, tau2, tau3]
+    tau = [gcc_phat.gcc_phat(sig1, sig2, sample_rate,interp=16), gcc_phat.gcc_phat(sig1, sig3, sample_rate,interp=16),
+            gcc_phat.gcc_phat(sig1, sig4, sample_rate,interp=16)]
     print(tau)
 
     # d1 = tdoa[0]*constant.speed_of_sound
     # d2 = tdoa[1]*constant.speed_of_sound
     # d3 = tdoa[2]*constant.speed_of_sound
+    d = [tau[0]*constant.speed_of_sound, tau[1]*constant.speed_of_sound,tau[2]*constant.speed_of_sound]
+    
+    param = [0, 0, 0.27, 0, d[0], 0.54, 0, d[1], 0.8, 0, d[2]]
+    # param = [0, 0, 0.8, 0, d[0], 0.8, 0.5, d[1], 0, 0.5, d[2]]
 
-    d1 = tau[0]*constant.speed_of_sound
-    d2 = tau[1]*constant.speed_of_sound
-    d3 = tau[2]*constant.speed_of_sound
+    mesh = [0, 0.8, 0.8/100, 0, 0.5, 0.5/100]
 
-    param = [0, 0, 0.8, 0, d1, 0.8, 0.5, d2, 0, 0.5, d3]
-    mesh = [-0.5, 1.5, 2/100, -0.5, 1.5, 2/100]
     xe, ye, x, y, h1, h2, h3 = triangulation.triangulate(param, mesh)
 
     print(xe)

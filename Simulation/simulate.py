@@ -1,13 +1,10 @@
 import json
 import random
-import matplotlib.pyplot as plt
 import scipy.constants as constant
 import gcc_phat
 import gui
-import sig_gen
 import signal_procesing
 import triangulation
-import numpy as np
 import wav_signal
 
 
@@ -44,7 +41,7 @@ def tests(config, noisetype="none"):
         y_est = []
         all_est_tdoas = []
         all_act_tdoas = []
-        parabolas = []
+        hyperbolas = []
         all_points = []
 
         # debug
@@ -69,7 +66,7 @@ def tests(config, noisetype="none"):
                 # sig, tdoa = sig_gen.generate_signal(
                 #     point, mic_loc, test["frequency"]["value"], amplitude=6)
                 sig, t_d = wav_signal.gen_delay(
-                    refsig, point, mic_loc, sample_rate, 1000)
+                    refsig, point, mic_loc, sample_rate, 4410)
                 signals.append(sig)
                 if count == 0:
                     ref_t_d = t_d
@@ -126,7 +123,7 @@ def tests(config, noisetype="none"):
             # y_tri.append(y)
             all_est_tdoas.append(est_tdoas)
             all_act_tdoas.append(act_tdoas)
-            parabolas.append([h1, h2, h3])
+            hyperbolas.append([h1, h2, h3])
             all_points.append(point)
 
             # xs, ys = point[0], point[1]
@@ -151,7 +148,7 @@ def tests(config, noisetype="none"):
 
         # run the gui
         gui.run(test["frequency"]["value"], mics, x_test,
-                y_test, x_est, y_est, 0.8, 0.5, 10, all_est_tdoas, all_act_tdoas, parabolas, x, y, noisy, noisetype)
+                y_test, x_est, y_est, 0.8, 0.5, 10, all_est_tdoas, all_act_tdoas, hyperbolas, x, y, noisy, noisetype)
 
         print("finnished first")
 

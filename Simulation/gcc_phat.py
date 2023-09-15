@@ -149,7 +149,7 @@ def gcc_phat(sig, refsig, fs=44100, max_tau=None, interp=16):
     REFSIG = np.fft.rfft(refsig, n=n)
     R = SIG * np.conj(REFSIG)
 
-    cc = np.fft.irfft(R / np.abs(R), n=(interp * n))
+    cc = np.fft.irfft((R/np.abs(R)), n=(interp * n))
 
     max_shift = int(interp * n / 2)
     if max_tau:
@@ -171,7 +171,7 @@ def main():
 
     for i in range(0, 10):
         sig = np.concatenate((np.linspace(0, 0, i), refsig, np.linspace(0, 0, 10 - i)))
-        offset, _ = gcc_phat(sig, refsig)
+        offset, b = gcc_phat(sig, refsig)
         print(offset)
 
 
