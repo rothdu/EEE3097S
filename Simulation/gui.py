@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import math
 from matplotlib.lines import Line2D
 import openpyxl
 from openpyxl.utils.dataframe import dataframe_to_rows
@@ -93,9 +92,9 @@ def plot_test_result_points():
     # Create a scatter plot for each pair of test and resultant points
     for i in range(len(x_test)):
         plt.scatter(
-            x_test[i], y_test[i], label=f'Actual Point {i+1}', color=colours[i], marker='s', s=50)
+            x_test[i], y_test[i], label=f'Actual Point {i+1}', color=['cyan'], marker='o', s=150)
         plt.scatter(
-            x_res[i], y_res[i], label=f'Estimated Point {i+1}', color=colours[i], marker='o', s=50)
+            x_res[i], y_res[i], label=f'Estimated Point {i+1}', color=['red'], marker='.', s=150)
 
     legend_handles = [Line2D([0], [0], marker='s', color='w', label='Actual Points', markersize=10, markerfacecolor='black'), Line2D(
         [0], [0], marker='o', color='w', label='Estimated Points', markersize=10, markerfacecolor='black')]
@@ -277,7 +276,7 @@ def ss_toa_val():
 
 
 def ss_tri():
-    global x_test, y_test, x_res, y_res, noise
+    global x_test, y_test, x_res, y_res, noise, x_max, y_max
 
     points = np.linspace(1, num_points, num_points)
 
@@ -286,8 +285,8 @@ def ss_tri():
     x_p_f = np.array([True] * num_points, dtype=bool)
     y_p_f = np.array([True] * num_points, dtype=bool)
     for i in range(0, num_points):
-        x_err.append(round((x_test[i]-x_res[i])/x_test[i]*100, 5))
-        y_err.append(round((y_test[i]-y_res[i])/y_test[i]*100, 5))
+        x_err.append(round((x_test[i]-x_res[i])/x_max*100, 5))
+        y_err.append(round((y_test[i]-y_res[i])/y_max*100, 5))
         if noise == True:
             acc = 5.0
         else:

@@ -35,27 +35,32 @@ def triangulate(param, mesh):
     ans_arr = [filter_ans(sym.solve([e1, e2]), mesh, x, y),
             filter_ans(sym.solve([e1, e3]), mesh, x, y),
             filter_ans(sym.solve([e2, e3]), mesh, x, y) ]
+    
     # finds midpoint of each pair
     xe = 0
     ye = 0
 
     success = False
+    count = 1
     for ans in ans_arr:
         
         if len(ans) > 0:
+            if(success): count += 1
             success = True
             xe = xe + ans[0][x]
             ye = ye + ans[0][y]
-    xe /= len(ans_arr)
-    ye /= len(ans_arr)
+    xe /= count
+    ye /= count
 
     if not success:
         xe = -10
         ye = -10
         
     # defines a meshgrid of x and y, to produce meshgrids h1, h2, h3 for plotting
-    x, y = meshgrid(arange(mesh[0], mesh[1], mesh[2]),
-                    arange(mesh[3], mesh[4], mesh[5]))
+    # x, y = meshgrid(arange(mesh[0], mesh[1], mesh[2]),
+    #                 arange(mesh[3], mesh[4], mesh[5]))
+    x, y = meshgrid(arange(-0.5, 1.5, 2/100),
+                    arange(-0.05, 1.5, 2/100))
     h1 = sqrt((x-param[0])**2+(y-param[1])**2) - \
         sqrt((x-param[2])**2+(y-param[3])**2)-param[4]
     h2 = sqrt((x-param[0])**2+(y-param[1])**2) - \
@@ -67,31 +72,47 @@ def triangulate(param, mesh):
 
 
 def filter_ans(ans, mesh, x, y):
-    
-    
+
     ans_out = []
     for i in range(len(ans)):  # loop over possible answers
 
         # check for (invalid) complex answers
-        if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
+        try:
+            if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
+                and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
+                ans_out.append(ans[i])
+        except TypeError:
+            print("Caught error with complex value")
             continue
-            # check that answer is within range of meshgrid + some tolerance:
-        if (ans[i][x] >= mesh[0] and ans[i][x] <= mesh[1]
-            and ans[i][y] >= mesh[3] and ans[i][y] <= mesh[4]):
-            ans_out.append(ans[i])
 
     # if you don't find a point inside the grid:
     if len(ans_out) == 0 and len(ans) > 0:
+        try:
+            if (len(ans) == 2) and (ans[0][x] == ans[1][x]):
+                if ans[0][y] >= 0:
+                    ans_out.append(ans[0])
+                    return ans_out
+                elif ans[1][y] >= 0:
+                    ans_out.append(ans[1])
+                    return ans_out
+        except TypeError:
+            print("Caught error with complex value")
+
         dists = []
         for i in range(len(ans)):
-            if not (np.isreal(ans[i][x]) or np.isreal(ans[i][y])):
+            try:
+                if ans[i][x] > 0 or True:
+                    dists.append(compute_closest_distance(ans[i], mesh, x, y))
+                    print(dists)
+            except TypeError:
                 continue
 
-            dists.append(compute_closest_distance(ans[i], mesh, x, y))
-        
-        max_index = np.argmax(dists)
-        ans_out.append(ans[max_index])
-
+        if len(dists) != 0:
+            max_index = np.argmax(dists)
+            ans_out.append(ans[max_index])
+    # debug
+    # print(ans)
+    # print(ans_out)
     return ans_out  
 
 
