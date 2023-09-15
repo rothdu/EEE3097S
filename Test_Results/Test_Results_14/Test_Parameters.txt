@@ -1,0 +1,6 @@
+Frequency: 280
+Mic1: (0.0,0.0)
+Mic2: (0.27,0.0)
+Mic3: (0.54,0.0)
+Mic4: (0.8,0.0)
+Noise Type: p

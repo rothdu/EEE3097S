@@ -34,7 +34,10 @@ def main():
 # the output signal for the tests will use all of the specified noise types
 def tests(config, noisetype="none"):
     # LOAD SOUND FILE
-    sample_rate, refsig = wav_signal.load_signal("Simulation/sound.wav")
+    sample_rate, refsig = wav_signal.load_signal("Simulation/snap.wav")
+
+    # debug
+    count_mic_conf = 1
 
     # loop over specified test parameters
     for test in config["tests"]:
@@ -50,9 +53,6 @@ def tests(config, noisetype="none"):
         all_act_tdoas = []
         hyperbolas = []
         all_points = []
-
-        # debug
-        count_mic_conf = 1
 
         noisy = False
 
