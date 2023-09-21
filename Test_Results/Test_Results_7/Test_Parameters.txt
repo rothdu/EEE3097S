@@ -3,4 +3,4 @@ Mic1: (0,0)
 Mic2: (0.8,0.0)
 Mic3: (0.8,0.5)
 Mic4: (0.0,0.5)
-Noise Type: 
+Noise Type: none

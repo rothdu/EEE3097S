@@ -4,11 +4,12 @@ import scipy.constants as constant
 import gcc_phat
 import gui
 import signal_procesing
-import triangulation
+import triangulation2
 import wav_signal
-
+import time
 
 def main():
+    start_time = time.time()
     with open("Simulation/sim_config.json", "r") as read_file:
         config = json.load(read_file)
 
@@ -28,6 +29,10 @@ def main():
 
     print("Starting No Noise Test\n")
     tests(config)
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print("Elapsed time: ", elapsed_time) 
 
 
 # noisetype can be any combination of "g", "p", and "i", e.g., "gpi", "ip", "g", etc.
@@ -117,7 +122,7 @@ def tests(config, noisetype="none"):
             tri_mesh = [0, 0.8, 0.8/100, 0, 0.5, 0.5/100]
 
             # perform triangulation
-            xe, ye, x, y, h1, h2, h3 = triangulation.triangulate(
+            xe, ye, x, y, h1, h2, h3 = triangulation2.triangulate(
                 tri_param, tri_mesh)
 
             print("actual point = " + str(point))
