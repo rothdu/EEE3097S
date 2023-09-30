@@ -60,7 +60,7 @@ def tests(config, noisetype="none"):
         all_points = []
 
         noisy = False
-
+    
         # loop over the set of test points
         for point in test["points"]["points"]:
 
