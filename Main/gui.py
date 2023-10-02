@@ -16,7 +16,7 @@ import random
 
 # some useful global variables
 plotSize = (640, 480)
-samplingPeriod = 0.5
+samplingPeriod = 1
 
 nextSamplingTime = time.time()
 
@@ -31,7 +31,6 @@ threadQueue = queue.Queue(maxsize=1)
 
 # generates random points to imitate the "localising" function, for testing purposes
 def generate_random_points():
-    time.sleep(1)
     return [random.uniform(0, 10), random.uniform(0, 8)]
 
 # used to initialise the matplotlib plot that is shown in the gui
@@ -49,14 +48,14 @@ def locate():
     
     try:
         threadQueue.put_nowait(generate_random_points())
-    except queue.Empty:
+    except queue.Full:
         print("attempted to add multiple data to queue")
 
 def setReadySamplingPeriod():
     global readyManualControl
     global samplingPeriodDone
     samplingPeriodDone = True
-    readyManualControl = True
+    readyManualControl = not paused # will only set to true if function is not paused
 
 
 
@@ -96,7 +95,7 @@ def singleShot(event, values):
         readyManualControl = True
         window["-START-"].update(disabled=True)
     
-def updatePlot(ax, data):
+def updatePlot(ax, data, plotHyperbolas):
     ax.cla()
     ax.grid(True)
     ax.set_xlim([0, 10])
@@ -104,6 +103,34 @@ def updatePlot(ax, data):
     x = data[0]
     y = data[1]
     ax.plot(x, y ,'ro')
+
+    if plotHyperbolas:
+        updateMessage("Pretend I am plotting a hyperbola")
+
+    # add code here to plot hyperbolas based on data[2:4]
+
+def updateMessage(messageText):
+    global window
+
+    window["-MESSAGE-"].update(value=messageText)
+
+def updateSamplingFrequency(values):
+    global window
+    global samplingPeriod
+
+    try:
+        newVal = float(values["-SAMPLINGVAL-"])
+        if values["-USESAMPLINGFREQ-"]:
+            samplingPeriod = 1/newVal
+        if values["-USESAMPLINGPERIOD-"]:
+            samplingPeriod = newVal*1e-3
+
+        updateMessage("Sample rate updated")
+
+    except ValueError:
+        updateMessage("Invalid sample rate entered")
+        window["-SAMPLINGVAL-"].update()
+
 
 
 def main():
@@ -124,14 +151,36 @@ def main():
 
     # All the stuff inside the window.
     layout = [  # canvas for matplotlib plot
-                [sg.Canvas(size=plotSize, key="-CANVAS-")],
+        [sg.Canvas(size=plotSize, key="-CANVAS-")],
 
-                # radio buttons for continuous / single shot modes
-                [sg.Radio('Continuous', "CAPTUREMODE", default=True, key="-CONTINUOUS-", enable_events=True), 
-                 sg.Radio("Single-Shot", "CAPTUREMODE", default=False, key="-SINGLESHOT-", enable_events=True)],
+        # start / stop button
+        [sg.Button('Start', key = "-START-")], 
 
-                # start / stop button
-                [sg.Button('Start', key = "-START-")] ]
+        # Horizontal separator
+        [sg.HorizontalSeparator()],
+        
+        # radio buttons for continuous / single shot modes
+        [sg.Radio('Continuous', "CAPTUREMODE", default=True, key="-CONTINUOUS-", enable_events=True), 
+            sg.Radio("Single-Shot", "CAPTUREMODE", default=False, key="-SINGLESHOT-", enable_events=True)],
+        
+        [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-")],
+        # Horizontal separator
+        [sg.HorizontalSeparator()],
+
+        # continuous-time sampling frequency
+        [sg.Text("Sampling rate (continuous mode)"),
+            sg.Radio("Frequency (Hz)", "SAMPLINGRATEMODE", default=True, key="-USESAMPLINGFREQ-"), 
+            sg.Radio("Period (ms)", "SAMPLINGRATEMODE", default=False, key="-USESAMPLINGPERIOD-"),
+            sg.Input(default_text=1, size=(8, 1), key="-SAMPLINGVAL-"), sg.Button("Update", key="-UPDATESAMPLINGVAL-")],
+
+        # Horizontal separator
+        [sg.HorizontalSeparator()],
+
+        # output message
+        [sg.Text("", key="-MESSAGE-")]
+    ]
+
+                
 
     # Create the Window
     window = sg.Window('Acoustic triangulation', layout, finalize=True)
@@ -163,6 +212,8 @@ def main():
         elif values["-SINGLESHOT-"]:
             singleShot(event, values)
 
+        if event == "-UPDATESAMPLINGVAL-":
+            updateSamplingFrequency(values)
 
 
         try:
@@ -187,11 +238,13 @@ def main():
             dataCollectionThread.start()
         
 
+
+        # known problem: if plotting is slower than data collection, 
         if newPlot:
 
             newPlot = False
 
-            updatePlot(ax, data)
+            updatePlot(ax, data, values["-PLOTHYPERBOLAS-"])
             
             figAgg.draw() # might need to take this out of the if
 
