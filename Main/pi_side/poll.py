@@ -36,20 +36,24 @@ arecord_mono = [
     "-v"
 ]
 
-arecord_stereo = ["arecord", "-D", "plughw:0", "-c2", "-r", "48000", "-f", "S32_LE", "-t", "wav", "-V", "stereo", "-v"]
+arecord_stereo = ["arecord", "-D", "plughw:0", "-c2", "-r",
+                  "48000", "-f", "S32_LE", "-t", "wav", "-V", "stereo", "-v"]
 
 if sys.argv[3] == "mono":
     arecord = arecord_mono
-elif: sys.argv[3] == "stereo":
+elif sys.argv[3] == "stereo":
     arecord = arecord_stereo
 else:
     print("Invalid record type. <stereo = 'mono'/'stereo'>")
     GPIO.cleanup()
     sys.exit()
 
+
 def scp(local_ip, local_user, local_dir, file):
-    command = ["scp", "-P2222", file, local_user + "@" + local_ip + ":/home/" + local_user + local_dir]
+    command = ["scp", "-P2222", file, local_user + "@" +
+               local_ip + ":/home/" + local_user + local_dir]
     subprocess.run(command)
+
 
 # initialize file directory
 sound_dir = "bytes/"
@@ -64,25 +68,30 @@ try:
         while True:
             while not os.path.exists(check_pc_ready):
                 time.sleep(0.000001)
-            GPIO.output(me_ready,GPIO.HIGH)
+            GPIO.output(me_ready, GPIO.HIGH)
             if GPIO.input(other_ready) == GPIO.LOW:
                 GPIO.wait_for_edge(other_ready, GPIO.FALLING)
-            GPIO.output(me_ready,GPIO.LOW)
+            GPIO.output(me_ready, GPIO.LOW)
             GPIO.wait_for_edge(clock_in, GPIO.FALLING)
-            subprocess.run(arecord + [sound_dir + sys.argv[2] + "_next_byte.wav"])
+            subprocess.run(
+                arecord + [sound_dir + sys.argv[2] + "_next_byte.wav"])
             os.remove(check_pc_ready)
-            scp("127.0.0.1", "simon","/pi_sync/bytes",sound_dir + sys.argv[2] + "_next_byte.wav")
-            scp("127.0.0.1", "simon", "/pi_sync", sys.argv[2] + "_finnished.txt")
+            scp("127.0.0.1", "simon", "/pi_sync/bytes",
+                sound_dir + sys.argv[2] + "_next_byte.wav")
+            scp("127.0.0.1", "simon", "/pi_sync",
+                sys.argv[2] + "_finnished.txt")
     elif sys.argv[1] == "sec":
         while True:
-            GPIO.output(me_ready,GPIO.HIGH)
+            GPIO.output(me_ready, GPIO.HIGH)
             if GPIO.input(other_ready) == GPIO.LOW:
                 GPIO.wait_for_edge(other_ready, GPIO.FALLING)
-            GPIO.output(me_ready,GPIO.LOW)
+            GPIO.output(me_ready, GPIO.LOW)
             GPIO.wait_for_edge(clock_in, GPIO.FALLING)
-            subprocess.run(arecord + [sound_dir +"rpi2_next_byte.wav"])
-            scp("127.0.0.1", "simon","/pi_sync/bytes",sound_dir + sys.argv[2] + "_next_byte.wav")
-            scp("127.0.0.1", "simon", "/pi_sync", sys.argv[2] + "_finnished.txt")
+            subprocess.run(arecord + [sound_dir + "rpi2_next_byte.wav"])
+            scp("127.0.0.1", "simon", "/pi_sync/bytes",
+                sound_dir + sys.argv[2] + "_next_byte.wav")
+            scp("127.0.0.1", "simon", "/pi_sync",
+                sys.argv[2] + "_finnished.txt")
     else:
         print("Invalid device type. <device = 'main'/'sec'>")
 
@@ -91,4 +100,3 @@ except KeyboardInterrupt:
 
 finally:
     GPIO.cleanup()
-
