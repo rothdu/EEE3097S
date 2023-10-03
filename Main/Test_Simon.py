@@ -26,13 +26,13 @@ low_cut = 200
 high_cut = 20000
 
 # Normalize the cutoff frequency by the Nyquist frequency
-nyquist = 0.5 * 441000
+nyquist = 0.5 * 44100
 cutoff_frequency /= nyquist
 low_cut /= nyquist
 high_cut /= nyquist
 
 # Define the filter order
-filter_order = 2
+filter_order = 6
 
 # Design the low-pass Butterworth filter
 high_b, high_a = signal.butter(filter_order, cutoff_frequency, btype='high')
@@ -68,8 +68,8 @@ rpi2_chan_1 = signal.lfilter(band_b, band_a, rpi2_chan_1)
 rpi2_chan_2 = signal.lfilter(band_b, band_a, rpi2_chan_2)
 
 siglen = len(rpi1_chan_1)
-front_cut = 500
-end_cut = 500
+front_cut = 1000
+end_cut = 0
 rpi1_chan_1 = rpi1_chan_1[front_cut:siglen-end_cut]
 rpi1_chan_2 = rpi1_chan_2[front_cut:siglen-end_cut]
 rpi2_chan_1 = rpi2_chan_1[front_cut:siglen-end_cut]
@@ -91,49 +91,50 @@ plt.show()
 
 max_tau = 0.01
 
-tdoa_own = gcc_phat.gcc_phat(
-    rpi2_chan_2, rpi2_chan_1, SR, max_tau)  # bottom right mic
-tdoa_other_1 = gcc_phat.gcc_phat(
-    rpi2_chan_2, rpi1_chan_1, SR, max_tau)  # top right mic
-tdoa_other_2 = gcc_phat.gcc_phat(
-    rpi2_chan_2, rpi1_chan_2, SR, max_tau)  # top left mic
+# tdoa_own = gcc_phat.gcc_phat(
+#     rpi2_chan_2, rpi2_chan_1, SR, max_tau)  # bottom right mic
+# tdoa_other_1 = gcc_phat.gcc_phat(
+#     rpi2_chan_2, rpi1_chan_1, SR, max_tau)  # top right mic
+# tdoa_other_2 = gcc_phat.gcc_phat(
+#     rpi2_chan_2, rpi1_chan_2, SR, max_tau)  # top left mic
 
 # tdoa rpi1
-# tdoa_rpi1 = gcc_phat.gcc_phat(
-#     rpi1_chan_2, rpi1_chan_1, SR, 0.0027)  # top left mic
+tdoa_rpi1 = gcc_phat.gcc_phat(
+    rpi1_chan_1, rpi1_chan_2, SR, max_tau)  # top left mic
 
 # tdoa rpi2
-# tdoa_rpi2 = gcc_phat.gcc_phat(
-#     rpi2_chan_2, rpi2_chan_1, SR, 0.0027)  # top left mic
+tdoa_rpi2 = gcc_phat.gcc_phat(
+    rpi2_chan_1, rpi2_chan_2, SR, max_tau)  # top left mic
 
-x, y = meshgrid(arange(0, 1, 0.1), arange(0, 0.7, 0.1))
+x, y = meshgrid(arange(0, 0.8, 0.01), arange(0, 0.5, 0.01))
 
-h_other = sqrt((x)**2+(y)**2) - sqrt((x-0.8)**2+(y-0)**2) - \
-    (tdoa_own*constant.speed_of_sound)
+# h_other = sqrt((x)**2+(y)**2) - sqrt((x-0.8)**2+(y-0)**2) - \
+#     (tdoa_own*constant.speed_of_sound)
 
-h_other_1 = sqrt((x)**2+(y)**2) - sqrt((x-0.8)**2+(y-0.5)**2) - \
-    (tdoa_other_1*constant.speed_of_sound)
+# h_other_1 = sqrt((x)**2+(y)**2) - sqrt((x-0.8)**2+(y-0.5)**2) - \
+#     (tdoa_other_1*constant.speed_of_sound)
 
-h_other_2 = sqrt((x)**2+(y)**2) - sqrt((x-0.0)**2+(y-0.5)**2) - \
-    (tdoa_other_2*constant.speed_of_sound)
+# h_other_2 = sqrt((x)**2+(y)**2) - sqrt((x-0.0)**2+(y-0.5)**2) - \
+#     (tdoa_other_2*constant.speed_of_sound)
 
 # testing rpi 1
-# h_rpi1_test = sqrt((x)**2+(y)**2) - sqrt((x-0.8)**2+(y-0)**2) - \
-#     (tdoa_rpi1*constant.speed_of_sound)
+h_rpi1_test = sqrt((x)**2+(y)**2) - sqrt((x-0.8)**2+(y-0)**2) - \
+    (tdoa_rpi1*constant.speed_of_sound)
 
 # testing rpi 2
-# h_rpi2_test = sqrt((x)**2+(y)**2) - sqrt((x-0)**2+(y-0.5)**2) - \
-#     (tdoa_rpi2*constant.speed_of_sound)
+h_rpi2_test = sqrt((x)**2+(y)**2) - sqrt((x-0)**2+(y-0.5)**2) - \
+    (tdoa_rpi2*constant.speed_of_sound)
 
-print("tdoa_own = " + str(tdoa_own))
-print("tdoa_other_1 = " + str(tdoa_other_1))
-print("tdoa_other_2 = " + str(tdoa_other_2))
-# print("tdoa_rpi1= " + str(tdoa_rpi1))
+# print("tdoa_own = " + str(tdoa_own))
+# print("tdoa_other_1 = " + str(tdoa_other_1))
+# print("tdoa_other_2 = " + str(tdoa_other_2))
+print("tdoa_rpi1= " + str(tdoa_rpi1))
+print("tdoa_rpi2= " + str(tdoa_rpi2))
 
-plt.contour(x, y, h_other, [0])
-plt.contour(x, y, h_other_1, [0])
-plt.contour(x, y, h_other_2, [0])
-# plt.contour(x, y, h_rpi1_test, [0])
-# plt.contour(x, y, h_rpi2_test, [0])
+# plt.contour(x, y, h_other, [0])
+# plt.contour(x, y, h_other_1, [0])
+# plt.contour(x, y, h_other_2, [0])
+plt.contour(x, y, h_rpi1_test, [0])
+plt.contour(x, y, h_rpi2_test, [0])
 
 plt.show()

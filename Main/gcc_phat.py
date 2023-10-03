@@ -49,16 +49,16 @@ def gcc_phat(sig, refsig, fs=44100, max_tau=None, interp=16):
     tau = shift / float(interp * fs)
 
     # plot before filtering and cutting
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 8))
-    ax1.plot(SIG)
-    ax1.set_title("SIG")
-    ax2.plot(REFSIG)
-    ax2.set_title("REFSIG")
-    ax3.plot(cc)
-    ax3.set_title("CC")
-    plt.subplots_adjust(hspace=0.5)
-    plt.suptitle('')
-    plt.show()
+    # fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 8))
+    # ax1.plot(SIG)
+    # ax1.set_title("SIG")
+    # ax2.plot(REFSIG)
+    # ax2.set_title("REFSIG")
+    # ax3.plot(cc)
+    # ax3.set_title("CC")
+    # plt.subplots_adjust(hspace=0.5)
+    # plt.suptitle('')
+    # plt.show()
 
     return tau
 
