@@ -18,6 +18,7 @@
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def gcc_phat(sig, refsig, fs=44100, max_tau=None, interp=16):
@@ -25,7 +26,7 @@ def gcc_phat(sig, refsig, fs=44100, max_tau=None, interp=16):
     This function computes the offset between the signal sig and the reference signal refsig
     using the Generalized Cross Correlation - Phase Transform (GCC-PHAT)method.
     '''
-    
+
     # make sure the length for the FFT is larger or equal than len(sig) + len(refsig)
     n = sig.shape[0] + refsig.shape[0]
 
@@ -46,23 +47,32 @@ def gcc_phat(sig, refsig, fs=44100, max_tau=None, interp=16):
     shift = np.argmax(np.abs(cc)) - max_shift
 
     tau = shift / float(interp * fs)
-    
+
+    # plot before filtering and cutting
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 8))
+    ax1.plot(SIG)
+    ax1.set_title("SIG")
+    ax2.plot(REFSIG)
+    ax2.set_title("REFSIG")
+    ax3.plot(cc)
+    ax3.set_title("CC")
+    plt.subplots_adjust(hspace=0.5)
+    plt.suptitle('')
+    plt.show()
+
     return tau
 
 
 def main():
-    
+
     refsig = np.linspace(1, 10, 10)
 
     for i in range(0, 10):
-        sig = np.concatenate((np.linspace(0, 0, i), refsig, np.linspace(0, 0, 10 - i)))
+        sig = np.concatenate(
+            (np.linspace(0, 0, i), refsig, np.linspace(0, 0, 10 - i)))
         offset, b = gcc_phat(sig, refsig)
         print(offset)
 
 
 if __name__ == "__main__":
     main()
-
-
-
-

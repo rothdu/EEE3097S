@@ -9,10 +9,10 @@ import gcc_phat
 from scipy import signal
 
 SR, rpi1 = wavfile.read(
-    "/home/simon/EEE3097_Repo_2/EEE3097S/Main/rpi1_si_teng_bottom_right.wav")
+    "/home/simon/EEE3097_Repo_2/EEE3097S/Main/bytes/rpi1_next_byte.wav")
 # SR, sig2 = wavfile.read("Main/rpi2_next_byte.wav")
 SR, rpi2 = wavfile.read(
-    "/home/simon/EEE3097_Repo_2/EEE3097S/Main/rpi2_si_teng_bottom_right.wav")
+    "/home/simon/EEE3097_Repo_2/EEE3097S/Main/bytes/rpi2_next_byte.wav")
 # sig1 = sig[:,0]
 rpi1_chan_1 = rpi1[:, 0]
 rpi1_chan_2 = rpi1[:, 1]
@@ -20,12 +20,10 @@ rpi2_chan_1 = rpi2[:, 0]
 rpi2_chan_2 = rpi2[:, 1]
 
 
-# define filter
-
 # Define the cutoff frequency (in Hz)
-cutoff_frequency = 500.0
-low_cut = 0.1
-high_cut = 50000
+cutoff_frequency = 200.0
+low_cut = 200
+high_cut = 20000
 
 # Normalize the cutoff frequency by the Nyquist frequency
 nyquist = 0.5 * 441000
@@ -58,20 +56,20 @@ plt.suptitle('plot before filtering and cutting ')
 plt.show()
 
 # apply low pass
-rpi1_chan_1 = signal.lfilter(high_b, high_a, rpi1_chan_1)
-rpi1_chan_2 = signal.lfilter(high_b, high_a, rpi1_chan_2)
-rpi2_chan_1 = signal.lfilter(high_b, high_a, rpi2_chan_1)
-rpi2_chan_2 = signal.lfilter(high_b, high_a, rpi2_chan_2)
+# rpi1_chan_1 = signal.lfilter(high_b, high_a, rpi1_chan_1)
+# rpi1_chan_2 = signal.lfilter(high_b, high_a, rpi1_chan_2)
+# rpi2_chan_1 = signal.lfilter(high_b, high_a, rpi2_chan_1)
+# rpi2_chan_2 = signal.lfilter(high_b, high_a, rpi2_chan_2)
 
 # apply band pass
-# rpi1_chan_1 = signal.lfilter(band_b, band_a, rpi1_chan_1)
-# rpi1_chan_2 = signal.lfilter(band_b, band_a, rpi1_chan_2)
-# rpi2_chan_1 = signal.lfilter(band_b, band_a, rpi2_chan_1)
-# rpi2_chan_2 = signal.lfilter(band_b, band_a, rpi2_chan_2)
+rpi1_chan_1 = signal.lfilter(band_b, band_a, rpi1_chan_1)
+rpi1_chan_2 = signal.lfilter(band_b, band_a, rpi1_chan_2)
+rpi2_chan_1 = signal.lfilter(band_b, band_a, rpi2_chan_1)
+rpi2_chan_2 = signal.lfilter(band_b, band_a, rpi2_chan_2)
 
 siglen = len(rpi1_chan_1)
 front_cut = 500
-end_cut = 0
+end_cut = 500
 rpi1_chan_1 = rpi1_chan_1[front_cut:siglen-end_cut]
 rpi1_chan_2 = rpi1_chan_2[front_cut:siglen-end_cut]
 rpi2_chan_1 = rpi2_chan_1[front_cut:siglen-end_cut]
@@ -91,18 +89,20 @@ plt.subplots_adjust(hspace=0.5)
 plt.suptitle('plot after filtering and cutting ')
 plt.show()
 
+max_tau = 0.01
+
 tdoa_own = gcc_phat.gcc_phat(
-    rpi2_chan_2, rpi2_chan_1, SR, 0.0027)  # bottom right mic
+    rpi2_chan_2, rpi2_chan_1, SR, max_tau)  # bottom right mic
 tdoa_other_1 = gcc_phat.gcc_phat(
-    rpi2_chan_2, rpi1_chan_1, SR, 0.0027)  # top right mic
+    rpi2_chan_2, rpi1_chan_1, SR, max_tau)  # top right mic
 tdoa_other_2 = gcc_phat.gcc_phat(
-    rpi2_chan_2, rpi1_chan_2, SR, 0.0027)  # top left mic
+    rpi2_chan_2, rpi1_chan_2, SR, max_tau)  # top left mic
 
-# # tdoa rpi1
+# tdoa rpi1
 # tdoa_rpi1 = gcc_phat.gcc_phat(
-#     rpi1_chan_1, rpi1_chan_2, SR, 0.0027)  # top left mic
+#     rpi1_chan_2, rpi1_chan_1, SR, 0.0027)  # top left mic
 
-# # tdoa rpi1
+# tdoa rpi2
 # tdoa_rpi2 = gcc_phat.gcc_phat(
 #     rpi2_chan_2, rpi2_chan_1, SR, 0.0027)  # top left mic
 
@@ -121,13 +121,14 @@ h_other_2 = sqrt((x)**2+(y)**2) - sqrt((x-0.0)**2+(y-0.5)**2) - \
 # h_rpi1_test = sqrt((x)**2+(y)**2) - sqrt((x-0.8)**2+(y-0)**2) - \
 #     (tdoa_rpi1*constant.speed_of_sound)
 
-# # testing rpi 2
+# testing rpi 2
 # h_rpi2_test = sqrt((x)**2+(y)**2) - sqrt((x-0)**2+(y-0.5)**2) - \
 #     (tdoa_rpi2*constant.speed_of_sound)
 
 print("tdoa_own = " + str(tdoa_own))
 print("tdoa_other_1 = " + str(tdoa_other_1))
 print("tdoa_other_2 = " + str(tdoa_other_2))
+# print("tdoa_rpi1= " + str(tdoa_rpi1))
 
 plt.contour(x, y, h_other, [0])
 plt.contour(x, y, h_other_1, [0])
