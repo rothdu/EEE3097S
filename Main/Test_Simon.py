@@ -55,7 +55,7 @@ plt.subplots_adjust(hspace=0.5)
 plt.suptitle('plot before filtering and cutting ')
 plt.show()
 
-# apply low pass
+# apply high pass
 # rpi1_chan_1 = signal.lfilter(high_b, high_a, rpi1_chan_1)
 # rpi1_chan_2 = signal.lfilter(high_b, high_a, rpi1_chan_2)
 # rpi2_chan_1 = signal.lfilter(high_b, high_a, rpi2_chan_1)
