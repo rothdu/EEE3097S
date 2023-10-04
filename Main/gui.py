@@ -28,6 +28,7 @@ readyManualControl = False
 samplingPeriodDone = False
 readyDataCollection = True
 newPlot = False
+showSyncDelay = False
 
 plotHyperbolas = False
 
@@ -119,10 +120,10 @@ def updatePlot(ax, data):
     ax.plot(x, y, 'ro')
 
     if plotHyperbolas:
-        xc = data["hyperbolas"][0]
-        yc = data["hyperbolas"][1]
-        h1 = data["hyperbolas"][2]
-        h2 = data["hyperbolas"][3]
+        xc = data["hyperbola"][0]
+        yc = data["hyperbola"][1]
+        h1 = data["hyperbola"][2]
+        h2 = data["hyperbola"][3]
         ax.contour(xc, yc, h1, colors="b")
         ax.countour(xc, yc, h2,  colors="g")
 
@@ -150,7 +151,6 @@ def updateSamplingFrequency(values):
 
     except ValueError:
         updateMessage("Invalid sample rate entered")
-        window["-SAMPLINGVAL-"].update()
 
 
 def main():
@@ -163,12 +163,17 @@ def main():
     global plotHyperbolas
     global paused
     global window
+    global checkSyncDelay
 
     sg.theme('LightBlue6')   # Add a touch of color
 
     # All the stuff inside the window.
     layout = [  # canvas for matplotlib plot
         [sg.Canvas(size=plotSize, key="-CANVAS-")],
+
+        # result of sync test
+        [sg.Checkbox("Calculate synchronisation delay", default = False, key = "-CHECKSYNCDELAY-"), 
+        sg.Text("", key = "-SYNCDELAY-")]
 
         # start / stop button
         [sg.Button('Start', key="-START-")],
@@ -243,6 +248,8 @@ def main():
 
         # implemented separately so that a separate sample rate flag can also be used
         if readyDataCollection and readyManualControl:
+            
+            checkSyncDelay = values["-CHECKSYNCDELAY-"]
             plotHyperbolas = values["-PLOTHYPERBOLAS"]
             readyDataCollection = False
             readyManualControl = False
@@ -255,6 +262,12 @@ def main():
             newPlot = False
 
             updatePlot(ax, data)
+
+            if checkSyncDelay:
+
+                syncDelay = data["reftdoa"][0] * 1e3
+                message = "Syncrhonistaion delay: " + "{:.3f}".format(syncDelay) + " ms"
+                window["-CHECKSYNCDELAY-"].update(value=message)
 
             figAgg.draw()  # might need to take this out of the if
 
