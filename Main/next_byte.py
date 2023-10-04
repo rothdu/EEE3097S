@@ -42,11 +42,9 @@ def find_delay():
 
 def main():
     # Your main script logic here
-    for i in range(0, 20):
-        delay_test("192.168.137.132", "rpi1")
-        wait_trans("Main/rpi1_finnished.txt", "Main/rpi2_finnished.txt")
-        print("Transfer finnished")
-        print(find_delay())
+    inform_ready("192.168.137.132", "rpi1")
+    wait_trans("Main/rpi1_finnished.txt", "Main/rpi2_finnished.txt")
+    print("Transfer finnished")
 
 
 if __name__ == "__main__":
