@@ -7,12 +7,13 @@ import gcc_phat
 from scipy import signal
 from scipy.optimize import least_squares
 
-def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
+def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
 
     returnDict = {
         "results": [],
         "hyperbola": [],
         "reftdoa": [],
+        "times": [startTime]
     }
 
     # Import Wav files
@@ -70,11 +71,10 @@ def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
     print("tdoa_rpi1= " + str(tdoa_rpi1))
     print("tdoa_rpi2= " + str(tdoa_rpi2))
 
-    Invalid = False
+    Valid = True
 
     if (tdoa_rpi1 == 0 or tdoa_rpi2 == 0):
-        ans_arr = [-10, -10]
-        Invalid = True
+        Valid = False
 
     else:
         def function(variables):
@@ -88,20 +88,21 @@ def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
         ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
 
     if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
-        ans_arr = [-10, -10]
-        Invalid = True
+        Valid = False
 
-    if hyperbola and not Invalid:   
+
+    if hyperbola and not Valid:   
         hyperbolas = genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2)
         returnDict["hyperbola"] += hyperbolas
 
-    if refTDOA and not Invalid:
+    if refTDOA and not Valid:
         tdoa_pisync = gcc_phat.gcc_phat(rpi2_chan_1, rpi1_chan_1, SR, max_tau)
-        returnDict["reftdoa"].append(tdoa_pisync)
+        if(tdoa_pisync != 0):
+            returnDict["reftdoa"].append(tdoa_pisync)
 
-    # TODO: extract a "normal" array from the scipy optimise thingy
-    returnDict["results"].append(ans_arr[0])
-    returnDict["results"].append(ans_arr[1])
+    if not Valid:
+        returnDict["results"].append(ans_arr[0])
+        returnDict["results"].append(ans_arr[1])
 
     return returnDict
 
@@ -124,7 +125,7 @@ def main():
                       "Main/bytes/rpi2_next_byte.wav",
                       [[0, 0.5], [0.8, 0.5], [0.0, 0.0]], False, False)
     
-    # print(result)
+    print(result)
 
 
 if __name__ == "__main__":
