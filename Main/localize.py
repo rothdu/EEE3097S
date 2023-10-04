@@ -7,19 +7,22 @@ import gcc_phat
 from scipy import signal
 from scipy.optimize import least_squares
 
+
 def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
 
     returnDict = {
-        "results": [],
+        "result": [],
         "hyperbola": [],
         "reftdoa": [],
         "times": [startTime],
         "errorMessage": []
     }
 
-    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = readSignal(path1, path2)
+    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = readSignal(
+        path1, path2)
 
-    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
+    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = processSignal(
+        rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
 
     max_tau = 0.01
 
@@ -51,24 +54,27 @@ def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
 
         ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
 
-    if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
-        Valid = False
-        returnDict["errorMessage"].append("Triangluation produced a value outside of the grid")
+        if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
+            Valid = False
 
-    if hyperbola and not Valid:   
+        returnDict["errorMessage"].append(
+            "Triangluation produced a value outside of the grid")
+
+    if hyperbola and not Valid:
         hyperbolas = genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2)
         returnDict["hyperbola"] += hyperbolas
 
     if refTDOA and not Valid:
         tdoa_pisync = gcc_phat.gcc_phat(rpi2_chan_1, rpi1_chan_1, SR, max_tau)
-        if(tdoa_pisync != 0):
+        if (tdoa_pisync != 0):
             returnDict["reftdoa"].append(tdoa_pisync)
 
-    if not Valid:
-        returnDict["results"].append(ans_arr[0])
-        returnDict["results"].append(ans_arr[1])
+    if Valid:
+        returnDict["result"].append(ans_arr[0])
+        returnDict["result"].append(ans_arr[1])
 
     return returnDict
+
 
 def readSignal(path1, path2):
 
@@ -83,6 +89,7 @@ def readSignal(path1, path2):
     rpi2_chan_2 = rpi2[:, 1]
 
     return SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2
+
 
 def processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2):
 
@@ -101,7 +108,8 @@ def processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2):
     filter_order = 6
 
     # Design the band pass Butterworth filter
-    band_b, band_a = signal.butter(filter_order, [low_cut, high_cut], btype='band')
+    band_b, band_a = signal.butter(
+        filter_order, [low_cut, high_cut], btype='band')
 
     # apply band pass
     rpi1_chan_1 = signal.lfilter(band_b, band_a, rpi1_chan_1)
@@ -109,7 +117,7 @@ def processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2):
     rpi2_chan_1 = signal.lfilter(band_b, band_a, rpi2_chan_1)
     rpi2_chan_2 = signal.lfilter(band_b, band_a, rpi2_chan_2)
 
-    #remove pop
+    # remove pop
     siglen = len(rpi1_chan_1)
     front_cut = 1000
     end_cut = 0
@@ -120,6 +128,7 @@ def processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2):
 
     return rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2
 
+
 def signalAquisitionTest(path1, path2):
 
     returnDict = {
@@ -127,15 +136,20 @@ def signalAquisitionTest(path1, path2):
         "processed": [],
     }
 
-    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = readSignal(path1, path2)
+    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = readSignal(
+        path1, path2)
 
-    returnDict["original"] += [rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2]
-    
-    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
+    returnDict["original"] += [rpi1_chan_1,
+                               rpi1_chan_2, rpi2_chan_1, rpi2_chan_2]
 
-    returnDict["results"] += [rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2]
+    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = processSignal(
+        rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
+
+    returnDict["result"] += [rpi1_chan_1,
+                             rpi1_chan_2, rpi2_chan_1, rpi2_chan_2]
 
     return returnDict
+
 
 def tdoaTest(x, y, path1, path2, micPos):
 
@@ -153,9 +167,11 @@ def tdoaTest(x, y, path1, path2, micPos):
 
     returnDict["actualTdoa"] += [actualTdoa_rpi1, actualTdoa_rpi2]
 
-    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = readSignal(path1, path2)
+    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = readSignal(
+        path1, path2)
 
-    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
+    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = processSignal(
+        rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
 
     max_tau = 0.01
 
@@ -166,16 +182,17 @@ def tdoaTest(x, y, path1, path2, micPos):
     # tdoa rpi2
     tdoa_rpi2 = gcc_phat.gcc_phat(
         rpi2_chan_1, rpi2_chan_2, SR, max_tau)  # top left mic
-    
+
     returnDict["estiTdoa"] += [tdoa_rpi1, tdoa_rpi2]
 
     return returnDict
 
+
 def triangulationTest(x, y, micPos):
 
     returnDict = {
-        "results": [],
-        "hyperbola":[]
+        "result": [],
+        "hyperbola": []
     }
 
     d1 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2)
@@ -189,19 +206,20 @@ def triangulationTest(x, y, micPos):
     returnDict["hyperbola"] += hyperbolas
 
     def function(variables):
-            (x, y) = variables
-            e1 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[1][0])**2+(y-micPos[1][1])**2) - \
-                (actualTdoa_rpi1*constant.speed_of_sound)
-            e2 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[2][0])**2+(y-micPos[2][1])**2) - \
-                (actualTdoa_rpi2*constant.speed_of_sound)
-            return [e1, e2]
+        (x, y) = variables
+        e1 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[1][0])**2+(y-micPos[1][1])**2) - \
+            (actualTdoa_rpi1*constant.speed_of_sound)
+        e2 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[2][0])**2+(y-micPos[2][1])**2) - \
+            (actualTdoa_rpi2*constant.speed_of_sound)
+        return [e1, e2]
 
     ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
 
-    returnDict["results"].append(ans_arr[0])
-    returnDict["results"].append(ans_arr[1])
+    returnDict["result"].append(ans_arr[0])
+    returnDict["result"].append(ans_arr[1])
 
     return returnDict
+
 
 def genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2):
     # defines a meshgrid of x and y, to produce meshgrids h_rpi1_test, h_rpi2_test for plotting
