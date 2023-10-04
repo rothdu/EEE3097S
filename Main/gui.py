@@ -30,8 +30,9 @@ readyManualControl = False
 samplingPeriodDone = False
 readyDataCollection = True
 newPlot = False
-checkSyncDelay = False
 
+
+checkSyncDelay = False
 plotHyperbolas = False
 
 threadQueue = queue.Queue(maxsize=1)
@@ -121,7 +122,7 @@ def updatePlot(ax, data):
     y = data["results"][1]
     ax.plot(x, y, 'ro')
 
-    if plotHyperbolas:
+    if plotHyperbolas and len(data["hyperbola"] != 0):
         xc = data["hyperbola"][0]
         yc = data["hyperbola"][1]
         h1 = data["hyperbola"][2]
@@ -265,7 +266,7 @@ def main():
 
             updatePlot(ax, data)
 
-            if checkSyncDelay:
+            if checkSyncDelay and len(data["reftdoa"] != 0):
 
                 syncDelay = data["reftdoa"][0] * 1e3
                 message = "Syncrhonistaion delay: " + \
