@@ -60,9 +60,15 @@ def localize(path1, path2, hyperbola="False"):
     # tdoa rpi2
     tdoa_rpi2 = gcc_phat.gcc_phat(
         rpi2_chan_1, rpi2_chan_2, SR, max_tau)  # top left mic
+    
+    tdoa_pisync = gcc_phat.gcc_phat(
+        rpi2_chan_1, rpi1_chan_1, SR, max_tau)  # top left mic
+    
 
     print("tdoa_rpi1= " + str(tdoa_rpi1))
     print("tdoa_rpi2= " + str(tdoa_rpi2))
+    print("tdoa_pisync= " + str(tdoa_pisync))
+
 
     if (tdoa_rpi1 == 0 or tdoa_rpi2 == 0):
         return -10, -10
