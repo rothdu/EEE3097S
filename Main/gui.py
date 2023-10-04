@@ -175,8 +175,7 @@ def main():
         [sg.Canvas(size=plotSize, key="-CANVAS-")],
 
         # result of sync test
-        [sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-"),
-         sg.Text("", key="-SYNCDELAY-")],
+        [sg.Text("Synchronisation delay: N/A", key="-SYNCDELAY-")],
 
         # start / stop button
         [sg.Button('Start', key="-START-")],
@@ -188,8 +187,8 @@ def main():
         [sg.Radio('Continuous', "CAPTUREMODE", default=True, key="-CONTINUOUS-", enable_events=True),
             sg.Radio("Single-Shot", "CAPTUREMODE", default=False, key="-SINGLESHOT-", enable_events=True)],
 
-        [sg.Checkbox("Plot hyperbolas", default=False,
-                     key="-PLOTHYPERBOLAS-")],
+        [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-"),
+        sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-")],
         # Horizontal separator
         [sg.HorizontalSeparator()],
 
@@ -272,6 +271,9 @@ def main():
                 message = "Syncrhonistaion delay: " + \
                     "{:.3f}".format(syncDelay) + " ms"
                 window["-CHECKSYNCDELAY-"].update(value=message)
+            else:
+                window["-CHECKSYNCDELAY-"].update(value="Syncrhonisation delay: N/A")
+
 
             figAgg.draw()  # might need to take this out of the if
 
