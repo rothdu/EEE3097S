@@ -13,8 +13,9 @@ import threading
 import time
 import queue
 import localize as loc
-import random
 import next_byte
+import random
+import subsystems
 
 
 # some useful global variables
@@ -51,7 +52,7 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 
 # used to read data from the mics and send it to application by adding to queue
-def locate():
+def locate(startTime):
     global threadQueue
     global plotHyperbolas
 
@@ -59,10 +60,10 @@ def locate():
     next_byte.wait_trans("Main/rpi1_finnished.txt", "Main/rpi2_finnished.txt")
 
     try:
-        threadQueue.put_nowait(
-            loc.localize("Main/bytes/rpi1_next_byte.wav",
-                         "Main/bytes/rpi2_next_byte.wav", micPositions,
-                         hyperbola=plotHyperbolas, refTDOA=checkSyncDelay))
+        result = loc.localize("Main/bytes/rpi1_next_byte.wav",
+                         "Main/bytes/rpi2_next_byte.wav", micPositions, startTime,
+                         hyperbola=plotHyperbolas, refTDOA=checkSyncDelay)
+        threadQueue.put_nowait(result)
     except queue.Full:
         print("attempted to add multiple data to queue!!!")
 
@@ -84,9 +85,9 @@ def continuous(event, values):
     if event == "-START-":
         paused = not paused
         if paused:
-            window['-START-'].update(text='Resume')
+            mainWindow['-START-'].update(text='Resume')
         else:
-            window['-START-'].update(text='Pause')
+            mainWindow['-START-'].update(text='Pause')
             nextSamplingTime = time.time()  # set the new "start" sampling time
             readyManualControl = True
             samplingPeriodDone = True  # ready for a sample
@@ -100,16 +101,16 @@ def continuous(event, values):
 
 def singleShot(event, values):
     global paused
-    global window
+    global mainWindow
     global readyManualControl
 
     paused = True
 
-    window['-START-'].update(text='Start')
+    mainWindow['-START-'].update(text='Start')
 
     if event == "-START-":
         readyManualControl = True
-        window["-START-"].update(disabled=True)
+        mainWindow["-START-"].update(disabled=True)
 
 
 def updatePlot(ax, data):
@@ -133,14 +134,9 @@ def updatePlot(ax, data):
     # add code here to plot hyperbolas based on data[2:4]
 
 
-def updateMessage(messageText):
-    global window
-
-    window["-MESSAGE-"].update(value=messageText)
-
 
 def updateSamplingFrequency(values):
-    global window
+    global mainWindow
     global samplingPeriod
 
     try:
@@ -150,32 +146,19 @@ def updateSamplingFrequency(values):
         if values["-USESAMPLINGPERIOD-"]:
             samplingPeriod = newVal*1e-3
 
-        updateMessage("Sample rate updated")
+        mainWindow["-MESSAGE-"].update(value="Sample rate updated")
 
     except ValueError:
-        updateMessage("Invalid sample rate entered")
+        mainWindow["-MESSAGE-"].update(value="Invalid sample rate entered")
 
-
-def main():
-    global threadQueue
-    global plotSize
-    global readyManualControl
-    global readyDataCollection
-    global nextSamplingTime
-    global newPlot
-    global plotHyperbolas
-    global paused
-    global window
-    global checkSyncDelay
-
-    sg.theme('LightBlue6')   # Add a touch of color
-
-    # All the stuff inside the window.
+def makeMainWindow():
+    # All the stuff inside the mainWindow.
     layout = [  # canvas for matplotlib plot
         [sg.Canvas(size=plotSize, key="-CANVAS-")],
 
-        # result of sync test
-        [sg.Text("Synchronisation delay: N/A", key="-SYNCDELAY-")],
+        # result of sync test and system timing
+        [sg.Text("Synchronisation delay: N/A", size = (31, 1), key="-SYNCDELAY-"), 
+        sg.Text("Update time: N/A", size = (20, 1), key="-UPDATETIME-")],
 
         # start / stop button
         [sg.Button('Start', key="-START-")],
@@ -203,15 +186,85 @@ def main():
         # Horizontal separator
         [sg.HorizontalSeparator()],
 
+        [sg.Button("Subsystem tests", key="-TESTS-"), sg.Button(":)", key="-THEME-")],
+
         # output message
         [sg.Text("", key="-MESSAGE-")]
     ]
 
-    # Create the Window
-    window = sg.Window('Acoustic triangulation', layout, finalize=True)
+    return sg.Window('Acoustic triangulation', layout, finalize=True)
+
+def makeTestsWindow():
+    layout = [
+        ### Sync test
+        [sg.Text("Pi Synchronisation Test")],
+
+        [sg.Button("Go", key="-SYNCTEST-"), sg.Text("", key="-TIME1-"), sg.Text("", key="-TIME2-")],
+
+        [sg.HorizontalSeparator()],
+
+        ### Signal acquisition test
+        [sg.Text("Signal Acquisition Test")], 
+
+        [sg.Button("Go", key="-SIGNALTEST-")], 
+         
+        [sg.HorizontalSeparator()], 
+
+        ### TDOA test
+        [sg.Text("TDOA test")], 
+
+        [sg.Button("Go", key="-TDOATEST-"), sg.Text("x: "), sg.Input(key="-TDOATESTX-"), 
+         sg.Text("y: "), sg.Input(key="-TDOATESTY-")], 
+
+        [sg.Text("Estimated TDOAs: ", key="-ESTTDOAS-")], 
+        [sg.Text("Actual TDOAS: ", key="-ACTTDOAS-")],
+
+        [sg.HorizontalSeparator()],
+
+        ### Triangulation test
+        [sg.Text("Triangulation test")], 
+
+        [sg.Button("Go", key="-TRITEST-"), sg.Text("TDOA 1: "), sg.Input(key="-TRITESTTDOA1-"), 
+         sg.Text("TDOA 2: "), sg.Input(key="-TRITESTTDOA2-")]
+         
+    ]
+
+    return sg.Window('Tests window', layout, finalize=True, modal=True)
+    
+def openTestsWindow():
+    global testsWindow
+
+
+    testsWindow = makeTestsWindow()
+    while True:
+        event, values = testsWindow.read()
+
+
+        if event == sg.WIN_CLOSED:
+            break
+        
+    testsWindow.close()
+
+def main():
+    global threadQueue
+    global plotSize
+    global readyManualControl
+    global readyDataCollection
+    global nextSamplingTime
+    global newPlot
+    global plotHyperbolas
+    global paused
+    global mainWindow
+    global checkSyncDelay
+
+    sg.theme('LightBlue6')   # Add a touch of color
+
+
+    # Create the main window
+    mainWindow = makeMainWindow()
 
     # create canvas to display matplotlib plot
-    canvasElem = window['-CANVAS-']
+    canvasElem = mainWindow['-CANVAS-']
     canvas = canvasElem.TKCanvas
 
     fig, ax = plt.subplots()  # initialise matplotlib plot that will be displayed
@@ -226,9 +279,25 @@ def main():
 
     # Event Loop to process "events" and get the "values" of the inputs
     while True:
-        event, values = window.read(timeout=100)
-        if event == sg.WIN_CLOSED:  # if user closes window, exit loop
+        event, values = mainWindow.read(timeout=100)
+        if event == sg.WIN_CLOSED:  # if user closes mainWindow, exit loop
             break
+        
+        if event == "-THEME-":
+            mainWindow.close()
+            sg.theme(random.choice(sg.theme_list()))
+            mainWindow = makeMainWindow()
+
+            canvasElem = mainWindow['-CANVAS-']
+            canvas = canvasElem.TKCanvas
+            fig, ax = plt.subplots()  # initialise matplotlib plot that will be displayed
+            ax.grid(True)
+            ax.set_xlim([0, 0.8])
+            ax.set_ylim([0, 0.5])
+            figAgg = draw_figure(canvas, fig)
+
+        if event == "-TESTS-":
+            openTestsWindow()
 
         if values["-CONTINUOUS-"]:
             continuous(event, values)
@@ -250,39 +319,56 @@ def main():
 
         # implemented separately so that a separate sample rate flag can also be used
         if readyDataCollection and readyManualControl:
+            startTime = time.time()
 
             checkSyncDelay = values["-CHECKSYNCDELAY-"]
             plotHyperbolas = values["-PLOTHYPERBOLAS-"]
             readyDataCollection = False
             readyManualControl = False
             dataCollectionThread = threading.Thread(
-                target=locate, args=(), daemon=True)
+                target=locate, args=(startTime), daemon=True)
             dataCollectionThread.start()
-
+        
         # known problem: if plotting is slower than data collection,
         if newPlot:
-            newPlot = False
+            if len(data["result"]) == 0:
 
-            updatePlot(ax, data)
-
-            if checkSyncDelay and len(data["reftdoa"]) != 0:
-
-                syncDelay = data["reftdoa"][0] * 1e3
-                message = "Syncrhonistaion delay: " + \
-                    "{:.3f}".format(syncDelay) + " ms"
-
-                window["-SYNCDELAY-"].update(value=message)
+                # maybe get localise to return an error message which can be printed?
+                mainWindow["-MESSAGE-"].update(value="Error")
             else:
-                window["-SYNCDELAY-"].update(
-                    value="Syncrhonisation delay: N/A")
+                newPlot = False
 
-            figAgg.draw()  # might need to take this out of the if
+                updatePlot(ax, data)
+
+                if checkSyncDelay and len(data["reftdoa"]) != 0:
+
+                    syncDelay = data["reftdoa"][0] * 1e3
+                    message = "Syncrhonistaion delay: " + \
+                        "{:.3f}".format(syncDelay) + " ms"
+
+                    mainWindow["-SYNCDELAY-"].update(value=message)
+                else:
+                    mainWindow["-SYNCDELAY-"].update(
+                        value="Syncrhonisation delay: N/A")
+                    
+                startTime = data["times"][0]
+                
+
+                figAgg.draw()  # might need to take this out of the if
+
+                endTime = time.time()
+
+                message = "Update time: " + \
+                    "{:.3f}".format(endTime - startTime) + " s"
+                mainWindow["-UPDATETIME-"].update(value=message)
+
+                
 
             # disable single-shot start button until data is ready to be plotted
             if values["-SINGLESHOT-"]:
-                window["-START-"].update(disabled=False)
+                mainWindow["-START-"].update(disabled=False)
 
-    window.close()
+    mainWindow.close()
 
 
 if __name__ == "__main__":

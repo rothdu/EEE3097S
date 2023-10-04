@@ -12,6 +12,15 @@ def inform_ready(pi_ip, pi_name):
     subprocess.run(scp_command)
 
 
+def delay_test(pi_ip, pi_name):
+    source_file = "Main/test.txt"
+    destination_host = pi_name + "@" + pi_ip + ":/home/" + pi_name
+
+    # Construct the scp command
+    scp_command = ["scp", source_file, destination_host]
+    subprocess.run(scp_command)
+
+
 def wait_trans(rpi1_fin_path, rpi2_fin_path):
     while not (os.path.exists(rpi1_fin_path) and os.path.exists(rpi2_fin_path)):
         time.sleep(0.000001)
