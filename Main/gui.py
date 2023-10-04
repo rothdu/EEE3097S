@@ -15,6 +15,7 @@ import queue
 import localize as loc
 import next_byte
 import random
+import os
 import subsystems
 
 
@@ -23,6 +24,9 @@ plotSize = (640, 480)
 samplingPeriod = 1
 
 micPositions = [[0, 0.5], [0.8, 0.5], [0, 0]]
+
+rpi1_fin_path = "Main/rpi1_finnished.txt"
+rpi2_fin_path = "Main/rpi2_finnished.txt"
 
 nextSamplingTime = time.time()
 
@@ -55,9 +59,11 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 def locate(startTime):
     global threadQueue
     global plotHyperbolas
+    global rpi1_fin_path
+    global rpi2_fin_path
 
     next_byte.inform_ready("192.168.137.132", "rpi1")
-    next_byte.wait_trans("Main/rpi1_finnished.txt", "Main/rpi2_finnished.txt")
+    next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
 
     try:
         result = loc.localize("Main/bytes/rpi1_next_byte.wav",
@@ -192,7 +198,7 @@ def makeMainWindow():
         [sg.Text("", key="-MESSAGE-")]
     ]
 
-    return sg.Window('Acoustic triangulation', layout, finalize=True)
+    return sg.Window('Acoustic triangulation', layout, finalize=True, location=(700, 0))
 
 def makeTestsWindow():
     layout = [
@@ -229,7 +235,7 @@ def makeTestsWindow():
          
     ]
 
-    return sg.Window('Tests window', layout, finalize=True, modal=True)
+    return sg.Window('Tests window', layout, finalize=True, modal=True, location=(700, 0))
     
 def openTestsWindow():
     global testsWindow
@@ -256,6 +262,14 @@ def main():
     global paused
     global mainWindow
     global checkSyncDelay
+
+
+    # remove "rpi finished" things
+    if os.path.exists(rpi1_fin_path):
+        os.remove(rpi1_fin_path)
+    if os.path.exists(rpi2_fin_path):
+        os.remove(rpi2_fin_path)
+
 
     sg.theme('LightBlue6')   # Add a touch of color
 
