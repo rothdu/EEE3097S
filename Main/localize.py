@@ -70,7 +70,7 @@ def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
         returnDict["hyperbola"] += hyperbolas
 
     if refTDOA and Valid:
-        tdoa_pisync = gcc_phat.gcc_phat(rpi2_chan_1, rpi1_chan_1, SR, max_tau)
+        tdoa_pisync = gcc_phat.gcc_phat(rpi2_chan_1, rpi1_chan_1, SR, 0.2)
         if (tdoa_pisync != 0):
             returnDict["reftdoa"].append(tdoa_pisync)
 
