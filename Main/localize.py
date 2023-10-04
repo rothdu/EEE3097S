@@ -65,11 +65,11 @@ def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
         
             returnDict["errorMessage"].append("Triangluation produced a value outside of the grid")
 
-    if hyperbola and not Valid:
+    if hyperbola and Valid:
         hyperbolas = genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2)
         returnDict["hyperbola"] += hyperbolas
 
-    if refTDOA and not Valid:
+    if refTDOA and Valid:
         tdoa_pisync = gcc_phat.gcc_phat(rpi2_chan_1, rpi1_chan_1, SR, max_tau)
         if (tdoa_pisync != 0):
             returnDict["reftdoa"].append(tdoa_pisync)
