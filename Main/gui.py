@@ -266,7 +266,7 @@ def main():
 
             updatePlot(ax, data)
 
-            if checkSyncDelay and len(data["reftdoa"] != 0):
+            if checkSyncDelay and len(data["reftdoa"]) != 0:
 
                 syncDelay = data["reftdoa"][0] * 1e3
                 message = "Syncrhonistaion delay: " + \
