@@ -51,7 +51,7 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 
 # used to read data from the mics and send it to application by adding to queue
-def locate():
+def locate(startTime):
     global threadQueue
     global plotHyperbolas
 
@@ -59,10 +59,11 @@ def locate():
     next_byte.wait_trans("Main/rpi1_finnished.txt", "Main/rpi2_finnished.txt")
 
     try:
-        threadQueue.put_nowait(
-            loc.localize("Main/bytes/rpi1_next_byte.wav",
+        result = loc.localize("Main/bytes/rpi1_next_byte.wav",
                          "Main/bytes/rpi2_next_byte.wav", micPositions,
-                         hyperbola=plotHyperbolas, refTDOA=checkSyncDelay))
+                         hyperbola=plotHyperbolas, refTDOA=checkSyncDelay)
+        result["times"] = [startTime]
+        threadQueue.put_nowait(result)
     except queue.Full:
         print("attempted to add multiple data to queue!!!")
 
@@ -174,8 +175,9 @@ def main():
     layout = [  # canvas for matplotlib plot
         [sg.Canvas(size=plotSize, key="-CANVAS-")],
 
-        # result of sync test
-        [sg.Text("Synchronisation delay: N/A", key="-SYNCDELAY-")],
+        # result of sync test and system timing
+        [sg.Text("Synchronisation delay: N/A", size = (31, 1), key="-SYNCDELAY-"), 
+        sg.Text("System update time: N/A", size = (30, 1), key="-UPDATETIME-")],
 
         # start / stop button
         [sg.Button('Start', key="-START-")],
@@ -250,17 +252,18 @@ def main():
 
         # implemented separately so that a separate sample rate flag can also be used
         if readyDataCollection and readyManualControl:
+            startTime = time.time()
 
             checkSyncDelay = values["-CHECKSYNCDELAY-"]
             plotHyperbolas = values["-PLOTHYPERBOLAS-"]
             readyDataCollection = False
             readyManualControl = False
             dataCollectionThread = threading.Thread(
-                target=locate, args=(), daemon=True)
+                target=locate, args=(startTime), daemon=True)
             dataCollectionThread.start()
 
         # known problem: if plotting is slower than data collection,
-        if newPlot:
+        if newPlot and len(data["result"]) != 0:
             newPlot = False
 
             updatePlot(ax, data)
