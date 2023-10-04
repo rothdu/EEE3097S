@@ -51,14 +51,19 @@ def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
             e2 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[2][0])**2+(y-micPos[2][1])**2) - \
                 (tdoa_rpi2*constant.speed_of_sound)
             return [e1, e2]
+        try:
+            ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
 
-        ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
+            if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
+                Valid = False
+                returnDict["errorMessage"].append("Triangluation couldn't find an intersection")
 
-        if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
+        except:
+            print("An exception occurred")
             Valid = False
 
-        returnDict["errorMessage"].append(
-            "Triangluation produced a value outside of the grid")
+        
+            returnDict["errorMessage"].append("Triangluation produced a value outside of the grid")
 
     if hyperbola and not Valid:
         hyperbolas = genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2)
@@ -119,7 +124,7 @@ def processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2):
 
     # remove pop
     siglen = len(rpi1_chan_1)
-    front_cut = 1000
+    front_cut = 1500
     end_cut = 0
     rpi1_chan_1 = rpi1_chan_1[front_cut:siglen-end_cut]
     rpi1_chan_2 = rpi1_chan_2[front_cut:siglen-end_cut]
@@ -156,6 +161,7 @@ def tdoaTest(x, y, path1, path2, micPos):
     returnDict = {
         "actualTdoa": [],
         "estiTdoa": [],
+        "percentError": []
     }
 
     d1 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2)
@@ -185,6 +191,9 @@ def tdoaTest(x, y, path1, path2, micPos):
 
     returnDict["estiTdoa"] += [tdoa_rpi1, tdoa_rpi2]
 
+    returnDict["percentError"].append((actualTdoa_rpi1-tdoa_rpi1)/0.0027)
+    returnDict["percentError"].append((actualTdoa_rpi2-tdoa_rpi2)/0.0027)
+
     return returnDict
 
 
@@ -192,7 +201,8 @@ def triangulationTest(x, y, micPos):
 
     returnDict = {
         "result": [],
-        "hyperbola": []
+        "hyperbola": [],
+        "percentError": []
     }
 
     d1 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2)
@@ -217,6 +227,9 @@ def triangulationTest(x, y, micPos):
 
     returnDict["result"].append(ans_arr[0])
     returnDict["result"].append(ans_arr[1])
+
+    returnDict["percentError"].append((x-ans_arr[0])/0.8)
+    returnDict["percentError"].append((y-ans_arr[1])/0.5)
 
     return returnDict
 
