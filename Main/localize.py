@@ -5,7 +5,7 @@ import scipy.constants as constant
 from numpy import arange, meshgrid, sqrt
 import gcc_phat
 from scipy import signal
-
+from scipy.optimize import least_squares
 
 def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
 
@@ -70,8 +70,11 @@ def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
     print("tdoa_rpi1= " + str(tdoa_rpi1))
     print("tdoa_rpi2= " + str(tdoa_rpi2))
 
+    Invalid = False
+
     if (tdoa_rpi1 == 0 or tdoa_rpi2 == 0):
         ans_arr = [-10, -10]
+        Invalid = True
 
     else:
         def function(variables):
@@ -82,16 +85,18 @@ def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
                 (tdoa_rpi2*constant.speed_of_sound)
             return [e1, e2]
 
-        ans_arr = scipy.optimize.fsolve(function, (0, 0))
+        ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
+        print(ans_arr)
 
     if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
         ans_arr = [-10, -10]
+        Invalid = True
 
-    if hyperbola:
+    if hyperbola and not Invalid:   
         hyperbolas = genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2)
         returnDict["hyperbola"] += hyperbolas
 
-    if refTDOA:
+    if refTDOA and not Invalid:
         tdoa_pisync = gcc_phat.gcc_phat(rpi2_chan_1, rpi1_chan_1, SR, max_tau)
         returnDict["reftdoa"].append(tdoa_pisync)
 
@@ -119,7 +124,7 @@ def main():
     result = localize("Main/bytes/rpi1_next_byte.wav",
                       "Main/bytes/rpi2_next_byte.wav",
                       [[0, 0.5], [0.8, 0.5], [0.0, 0.0]], False, False)
-
+    
     # print(result)
 
 
