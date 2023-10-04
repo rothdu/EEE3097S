@@ -13,8 +13,9 @@ import threading
 import time
 import queue
 import localize as loc
-import random
 import next_byte
+import random
+import subsystems
 
 
 # some useful global variables
@@ -185,7 +186,7 @@ def makeMainWindow():
         # Horizontal separator
         [sg.HorizontalSeparator()],
 
-        [sg.Button("Subsystem tests", key="-TESTS-")],
+        [sg.Button("Subsystem tests", key="-TESTS-"), sg.Button(":)", key="-THEME-")],
 
         # output message
         [sg.Text("", key="-MESSAGE-")]
@@ -282,6 +283,19 @@ def main():
         if event == sg.WIN_CLOSED:  # if user closes mainWindow, exit loop
             break
         
+        if event == "-THEME-":
+            mainWindow.close()
+            sg.theme(random.choice(sg.theme_list()))
+            mainWindow = makeMainWindow()
+
+            canvasElem = mainWindow['-CANVAS-']
+            canvas = canvasElem.TKCanvas
+            fig, ax = plt.subplots()  # initialise matplotlib plot that will be displayed
+            ax.grid(True)
+            ax.set_xlim([0, 0.8])
+            ax.set_ylim([0, 0.5])
+            figAgg = draw_figure(canvas, fig)
+
         if event == "-TESTS-":
             openTestsWindow()
 
@@ -314,36 +328,41 @@ def main():
             dataCollectionThread = threading.Thread(
                 target=locate, args=(startTime), daemon=True)
             dataCollectionThread.start()
-
+        
         # known problem: if plotting is slower than data collection,
-        if newPlot and len(data["result"]) != 0:
-            newPlot = False
+        if newPlot:
+            if len(data["result"]) == 0:
 
-            updatePlot(ax, data)
-
-            if checkSyncDelay and len(data["reftdoa"]) != 0:
-
-                syncDelay = data["reftdoa"][0] * 1e3
-                message = "Syncrhonistaion delay: " + \
-                    "{:.3f}".format(syncDelay) + " ms"
-
-                mainWindow["-SYNCDELAY-"].update(value=message)
+                # maybe get localise to return an error message which can be printed?
+                mainWindow["-MESSAGE-"].update(value="Error")
             else:
-                mainWindow["-SYNCDELAY-"].update(
-                    value="Syncrhonisation delay: N/A")
+                newPlot = False
+
+                updatePlot(ax, data)
+
+                if checkSyncDelay and len(data["reftdoa"]) != 0:
+
+                    syncDelay = data["reftdoa"][0] * 1e3
+                    message = "Syncrhonistaion delay: " + \
+                        "{:.3f}".format(syncDelay) + " ms"
+
+                    mainWindow["-SYNCDELAY-"].update(value=message)
+                else:
+                    mainWindow["-SYNCDELAY-"].update(
+                        value="Syncrhonisation delay: N/A")
+                    
+                startTime = data["times"][0]
                 
-            startTime = data["times"][0]
-            
 
-            figAgg.draw()  # might need to take this out of the if
+                figAgg.draw()  # might need to take this out of the if
 
-            endTime = time.time()
+                endTime = time.time()
 
-            message = "Update time: " + \
-                "{:.3f}".format(endTime - startTime) + " s"
-            mainWindow["-UPDATETIME-"].update(value=message)
+                message = "Update time: " + \
+                    "{:.3f}".format(endTime - startTime) + " s"
+                mainWindow["-UPDATETIME-"].update(value=message)
 
-            
+                
 
             # disable single-shot start button until data is ready to be plotted
             if values["-SINGLESHOT-"]:
