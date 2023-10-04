@@ -86,7 +86,6 @@ def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
             return [e1, e2]
 
         ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
-        print(ans_arr)
 
     if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
         ans_arr = [-10, -10]
