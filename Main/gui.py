@@ -126,8 +126,8 @@ def updatePlot(ax, data):
         yc = data["hyperbola"][1]
         h1 = data["hyperbola"][2]
         h2 = data["hyperbola"][3]
-        ax.contour(xc, yc, h1, colors="b")
-        ax.contour(xc, yc, h2,  colors="g")
+        ax.contour(xc, yc, h1, [0], colors="b")
+        ax.contour(xc, yc, h2, [0], colors="g")
 
     # add code here to plot hyperbolas based on data[2:4]
 
