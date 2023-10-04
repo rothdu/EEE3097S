@@ -9,6 +9,12 @@ from scipy import signal
 
 def localize(path1, path2, hyperbola="False"):
 
+    return_dict = 
+    {
+        "results": [],
+        "ref_tdoa": [],
+        "hyperbolas": []
+    }
     # Import Wav files
     SR, rpi1 = wavfile.read(path1)
     SR, rpi2 = wavfile.read(path2)
@@ -89,9 +95,9 @@ def localize(path1, path2, hyperbola="False"):
         h_rpi2_test = sqrt((x)**2+(y)**2) - sqrt((x-0)**2 +
                                                  (y-0.5)**2) - (tdoa_rpi2*constant.speed_of_sound)
 
-        return ans_arr[0][0], ans_arr[0][1], x, y, h_rpi1_test, h_rpi2_test
-    else:
-        return ans_arr[0][0], ans_arr[0][1]
+    
+    
+    return return_dict
 
 
 def main():

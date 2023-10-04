@@ -60,7 +60,7 @@ def locate():
     try:
         threadQueue.put_nowait(generate_random_points())
     except queue.Full:
-        print("attempted to add multiple data to queue")
+        print("attempted to add multiple data to queue!!!")
 
 
 def setReadySamplingPeriod():
