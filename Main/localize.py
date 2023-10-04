@@ -7,12 +7,13 @@ import gcc_phat
 from scipy import signal
 from scipy.optimize import least_squares
 
-def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
+def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
 
     returnDict = {
         "results": [],
         "hyperbola": [],
         "reftdoa": [],
+        "times": [startTime]
     }
 
     # Import Wav files

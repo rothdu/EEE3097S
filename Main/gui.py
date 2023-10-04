@@ -60,9 +60,8 @@ def locate(startTime):
 
     try:
         result = loc.localize("Main/bytes/rpi1_next_byte.wav",
-                         "Main/bytes/rpi2_next_byte.wav", micPositions,
+                         "Main/bytes/rpi2_next_byte.wav", micPositions, startTime,
                          hyperbola=plotHyperbolas, refTDOA=checkSyncDelay)
-        result["times"] = [startTime]
         threadQueue.put_nowait(result)
     except queue.Full:
         print("attempted to add multiple data to queue!!!")
@@ -177,7 +176,7 @@ def main():
 
         # result of sync test and system timing
         [sg.Text("Synchronisation delay: N/A", size = (31, 1), key="-SYNCDELAY-"), 
-        sg.Text("System update time: N/A", size = (30, 1), key="-UPDATETIME-")],
+        sg.Text("Update time: N/A", size = (20, 1), key="-UPDATETIME-")],
 
         # start / stop button
         [sg.Button('Start', key="-START-")],
@@ -278,8 +277,19 @@ def main():
             else:
                 window["-SYNCDELAY-"].update(
                     value="Syncrhonisation delay: N/A")
+                
+            startTime = data["times"][0]
+            
 
             figAgg.draw()  # might need to take this out of the if
+
+            endTime = time.time()
+
+            message = "Update time: " + \
+                "{:.3f}".format(endTime - startTime) + " s"
+            window["-UPDATETIME-"].update(value=message)
+
+            
 
             # disable single-shot start button until data is ready to be plotted
             if values["-SINGLESHOT-"]:
