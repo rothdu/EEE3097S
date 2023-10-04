@@ -97,7 +97,8 @@ def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
 
     if refTDOA and not Invalid:
         tdoa_pisync = gcc_phat.gcc_phat(rpi2_chan_1, rpi1_chan_1, SR, max_tau)
-        returnDict["reftdoa"].append(tdoa_pisync)
+        if(tdoa_pisync != 0):
+            returnDict["reftdoa"].append(tdoa_pisync)
 
     # TODO: extract a "normal" array from the scipy optimise thingy
     returnDict["results"].append(ans_arr[0])
