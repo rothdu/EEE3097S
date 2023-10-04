@@ -257,10 +257,10 @@ def makeConfigWindow():
 
 
         # checkboxes for plotting hyperbolas
-        [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-")],
+        [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-", enable_events=True)],
 
         # show sync delay
-        [sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-")],
+        [sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-", enable_events=True)],
         # Horizontal separator
         [sg.HorizontalSeparator()],
 
