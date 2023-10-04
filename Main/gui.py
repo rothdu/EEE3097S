@@ -265,6 +265,11 @@ def main():
 
             updatePlot(ax, data)
 
+            ### DEBUG ###
+            if checkSyncDelay and len(data["reftdoa"]) == 0:
+                print("debug print")
+
+
             if checkSyncDelay and len(data["reftdoa"]) != 0:
 
                 syncDelay = data["reftdoa"][0] * 1e3
