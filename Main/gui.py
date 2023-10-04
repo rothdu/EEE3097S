@@ -29,19 +29,13 @@ samplingPeriodDone = False
 readyDataCollection = True
 newPlot = False
 
+plotHyperbolas = False
 
 threadQueue = queue.Queue(maxsize=1)
 
 # generates random points to imitate the "localising" function, for testing purposes
 
 
-def generate_random_points():
-    next_byte.inform_ready("192.168.137.132", "rpi1")
-    next_byte.wait_trans("Main/rpi1_finnished.txt", "Main/rpi2_finnished.txt")
-
-    x, y = loc.localize("Main/bytes/rpi1_next_byte.wav",
-                        "Main/bytes/rpi2_next_byte.wav", False)
-    return [x, y]
 
 # used to initialise the matplotlib plot that is shown in the gui
 
@@ -56,9 +50,15 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 # used to read data from the mics and send it to application by adding to queue
 def locate():
     global threadQueue
+    global plotHyperbolas
+
+    next_byte.inform_ready("192.168.137.132", "rpi1")
+    next_byte.wait_trans("Main/rpi1_finnished.txt", "Main/rpi2_finnished.txt")
 
     try:
-        threadQueue.put_nowait(generate_random_points())
+        threadQueue.put_nowait(
+            loc.localize("Main/bytes/rpi1_next_byte.wav",
+                        "Main/bytes/rpi2_next_byte.wav", plotHyperbolas))
     except queue.Full:
         print("attempted to add multiple data to queue!!!")
 
@@ -108,17 +108,23 @@ def singleShot(event, values):
         window["-START-"].update(disabled=True)
 
 
-def updatePlot(ax, data, plotHyperbolas):
+def updatePlot(ax, data):
+    global plotHyperbolas
     ax.cla()
     ax.grid(True)
     ax.set_xlim([0, 0.8])
     ax.set_ylim([0, 0.5])
-    x = data[0]
-    y = data[1]
+    x = data["results"][0]
+    y = data["results"][1]
     ax.plot(x, y, 'ro')
 
     if plotHyperbolas:
-        updateMessage("Pretend I am plotting a hyperbola")
+        xc = data["hyperbolas"][0]
+        yc = data["hyperbolas"][1]
+        h1 = data["hyperbolas"][2]
+        h2 = data["hyperbolas"][3]
+        ax.contour(xc, yc, h1, colors="b")
+        ax.countour(xc, yc, h2,  colors="g")
 
     # add code here to plot hyperbolas based on data[2:4]
 
@@ -154,6 +160,7 @@ def main():
     global readyDataCollection
     global nextSamplingTime
     global newPlot
+    global plotHyperbolas
     global paused
     global window
 
@@ -236,6 +243,7 @@ def main():
 
         # implemented separately so that a separate sample rate flag can also be used
         if readyDataCollection and readyManualControl:
+            plotHyperbolas = values["-PLOTHYPERBOLAS"]
             readyDataCollection = False
             readyManualControl = False
             dataCollectionThread = threading.Thread(
@@ -244,10 +252,9 @@ def main():
 
         # known problem: if plotting is slower than data collection,
         if newPlot:
-
             newPlot = False
 
-            updatePlot(ax, data, values["-PLOTHYPERBOLAS-"])
+            updatePlot(ax, data)
 
             figAgg.draw()  # might need to take this out of the if
 
