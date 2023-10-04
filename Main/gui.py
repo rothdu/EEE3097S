@@ -21,6 +21,8 @@ import next_byte
 plotSize = (640, 480)
 samplingPeriod = 1
 
+micPositions = [[0, 0.5], [0.8, 0.5], [0, 0]]
+
 nextSamplingTime = time.time()
 
 paused = True
@@ -28,7 +30,7 @@ readyManualControl = False
 samplingPeriodDone = False
 readyDataCollection = True
 newPlot = False
-showSyncDelay = False
+checkSyncDelay = False
 
 plotHyperbolas = False
 
@@ -59,7 +61,8 @@ def locate():
     try:
         threadQueue.put_nowait(
             loc.localize("Main/bytes/rpi1_next_byte.wav",
-                        "Main/bytes/rpi2_next_byte.wav", plotHyperbolas))
+                        "Main/bytes/rpi2_next_byte.wav", micPositions, 
+                        hyperbola=plotHyperbolas, refTDOA = checkSyncDelay))
     except queue.Full:
         print("attempted to add multiple data to queue!!!")
 
