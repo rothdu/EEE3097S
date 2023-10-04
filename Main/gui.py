@@ -188,7 +188,7 @@ def main():
             sg.Radio("Single-Shot", "CAPTUREMODE", default=False, key="-SINGLESHOT-", enable_events=True)],
 
         [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-"),
-        sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-")],
+         sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-")],
         # Horizontal separator
         [sg.HorizontalSeparator()],
 
@@ -265,20 +265,16 @@ def main():
 
             updatePlot(ax, data)
 
-            ### DEBUG ###
-            if checkSyncDelay and len(data["reftdoa"]) == 0:
-                print("debug print")
-
-
             if checkSyncDelay and len(data["reftdoa"]) != 0:
 
                 syncDelay = data["reftdoa"][0] * 1e3
                 message = "Syncrhonistaion delay: " + \
                     "{:.3f}".format(syncDelay) + " ms"
-                window["-CHECKSYNCDELAY-"].update(value=message)
-            else:
-                window["-CHECKSYNCDELAY-"].update(value="Syncrhonisation delay: N/A")
 
+                window["-SYNCDELAY-"].update(value=message)
+            else:
+                window["-SYNCDELAY-"].update(
+                    value="Syncrhonisation delay: N/A")
 
             figAgg.draw()  # might need to take this out of the if
 
