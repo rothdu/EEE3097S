@@ -122,7 +122,7 @@ def updatePlot(ax, data):
     y = data["results"][1]
     ax.plot(x, y, 'ro')
 
-    if plotHyperbolas and len(data["hyperbola"] != 0):
+    if plotHyperbolas and len(data["hyperbola"]) != 0:
         xc = data["hyperbola"][0]
         yc = data["hyperbola"][1]
         h1 = data["hyperbola"][2]
