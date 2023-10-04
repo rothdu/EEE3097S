@@ -201,6 +201,8 @@ def triangulationTest(x, y, micPos):
     returnDict["results"].append(ans_arr[0])
     returnDict["results"].append(ans_arr[1])
 
+    return returnDict
+
 def genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2):
     # defines a meshgrid of x and y, to produce meshgrids h_rpi1_test, h_rpi2_test for plotting
     x, y = meshgrid(arange(0, 0.8, 0.8/100), arange(0, 0.5, 0.5/100))
@@ -218,7 +220,7 @@ def main():
     result = localize("Main/bytes/rpi1_next_byte.wav",
                       "Main/bytes/rpi2_next_byte.wav",
                       [[0, 0.5], [0.8, 0.5], [0.0, 0.0]], False, False)
-    
+    triangulationTest([[0, 0.5], [0.8, 0.5], [0.0, 0.0]])
     print(result)
 
 
