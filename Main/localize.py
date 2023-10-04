@@ -8,11 +8,11 @@ from scipy import signal
 
 
 def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
-    
+
     returnDict = {
-        "results":[],
-        "hyperbola":[],
-        "reftdoa":[],
+        "results": [],
+        "hyperbola": [],
+        "reftdoa": [],
     }
 
     # Import Wav files
@@ -66,12 +66,12 @@ def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
     # tdoa rpi2
     tdoa_rpi2 = gcc_phat.gcc_phat(
         rpi2_chan_1, rpi2_chan_2, SR, max_tau)  # top left mic
-    
-    # print("tdoa_rpi1= " + str(tdoa_rpi1))
-    # print("tdoa_rpi2= " + str(tdoa_rpi2))
+
+    print("tdoa_rpi1= " + str(tdoa_rpi1))
+    print("tdoa_rpi2= " + str(tdoa_rpi2))
 
     if (tdoa_rpi1 == 0 or tdoa_rpi2 == 0):
-        ans_arr = [-10,-10]
+        ans_arr = [-10, -10]
 
     else:
         def function(variables):
@@ -82,24 +82,25 @@ def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
                 (tdoa_rpi2*constant.speed_of_sound)
             return [e1, e2]
 
-        ans_arr = [scipy.optimize.fsolve(function, (0, 0))]
-        ans_arr = ans_arr[0]
+        ans_arr = scipy.optimize.fsolve(function, (0, 0))
 
-    if(ans_arr[0]<0 or ans_arr[0]>0.8 or ans_arr[1]<0 or ans_arr[1]>0.5):
-       ans_arr = [-10,-10] 
+    if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
+        ans_arr = [-10, -10]
 
     if hyperbola:
         hyperbolas = genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2)
         returnDict["hyperbola"] += hyperbolas
-    
+
     if refTDOA:
         tdoa_pisync = gcc_phat.gcc_phat(rpi2_chan_1, rpi1_chan_1, SR, max_tau)
         returnDict["reftdoa"].append(tdoa_pisync)
-    
+
     # TODO: extract a "normal" array from the scipy optimise thingy
-    returnDict["results"] += ans_arr
+    returnDict["results"].append(ans_arr[0])
+    returnDict["results"].append(ans_arr[1])
 
     return returnDict
+
 
 def genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2):
     # defines a meshgrid of x and y, to produce meshgrids h_rpi1_test, h_rpi2_test for plotting
@@ -110,15 +111,17 @@ def genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2):
     # testing rpi 2
     h_rpi2_test = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[2][0])**2+(y-micPos[2][1])**2) - \
         (tdoa_rpi2*constant.speed_of_sound)
-    
+
     return [x, y, h_rpi1_test, h_rpi2_test]
+
 
 def main():
     result = localize("Main/bytes/rpi1_next_byte.wav",
-                    "Main/bytes/rpi2_next_byte.wav",
-                    [[0,0.5],[0.8,0.5],[0.0,0.0]], False, False)
-    
-    print(result["results"])
+                      "Main/bytes/rpi2_next_byte.wav",
+                      [[0, 0.5], [0.8, 0.5], [0.0, 0.0]], False, False)
+
+    # print(result)
+
 
 if __name__ == "__main__":
     main()

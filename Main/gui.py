@@ -39,7 +39,6 @@ threadQueue = queue.Queue(maxsize=1)
 # generates random points to imitate the "localising" function, for testing purposes
 
 
-
 # used to initialise the matplotlib plot that is shown in the gui
 
 
@@ -61,8 +60,8 @@ def locate():
     try:
         threadQueue.put_nowait(
             loc.localize("Main/bytes/rpi1_next_byte.wav",
-                        "Main/bytes/rpi2_next_byte.wav", micPositions, 
-                        hyperbola=plotHyperbolas, refTDOA = checkSyncDelay))
+                         "Main/bytes/rpi2_next_byte.wav", micPositions,
+                         hyperbola=plotHyperbolas, refTDOA=checkSyncDelay))
     except queue.Full:
         print("attempted to add multiple data to queue!!!")
 
@@ -175,8 +174,8 @@ def main():
         [sg.Canvas(size=plotSize, key="-CANVAS-")],
 
         # result of sync test
-        [sg.Checkbox("Calculate synchronisation delay", default = False, key = "-CHECKSYNCDELAY-"), 
-        sg.Text("", key = "-SYNCDELAY-")]
+        [sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-"),
+         sg.Text("", key="-SYNCDELAY-")],
 
         # start / stop button
         [sg.Button('Start', key="-START-")],
@@ -251,9 +250,9 @@ def main():
 
         # implemented separately so that a separate sample rate flag can also be used
         if readyDataCollection and readyManualControl:
-            
+
             checkSyncDelay = values["-CHECKSYNCDELAY-"]
-            plotHyperbolas = values["-PLOTHYPERBOLAS"]
+            plotHyperbolas = values["-PLOTHYPERBOLAS-"]
             readyDataCollection = False
             readyManualControl = False
             dataCollectionThread = threading.Thread(
@@ -269,7 +268,8 @@ def main():
             if checkSyncDelay:
 
                 syncDelay = data["reftdoa"][0] * 1e3
-                message = "Syncrhonistaion delay: " + "{:.3f}".format(syncDelay) + " ms"
+                message = "Syncrhonistaion delay: " + \
+                    "{:.3f}".format(syncDelay) + " ms"
                 window["-CHECKSYNCDELAY-"].update(value=message)
 
             figAgg.draw()  # might need to take this out of the if
