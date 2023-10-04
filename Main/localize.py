@@ -76,9 +76,9 @@ def localize(path1, path2, micPos, hyperbola=False, refTDOA=False):
     else:
         def function(variables):
             (x, y) = variables
-            e1 = sqrt((x-micPos[0][0])**2+(y-micPos[0][0])**2) - sqrt((x-micPos[1][0])**2+(y-micPos[1][0])**2) - \
+            e1 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[1][0])**2+(y-micPos[1][1])**2) - \
                 (tdoa_rpi1*constant.speed_of_sound)
-            e2 = sqrt((x-micPos[0][0])**2+(y-micPos[0][0])**2) - sqrt((x-micPos[2][0])**2+(y-micPos[2][0])**2) - \
+            e2 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[2][0])**2+(y-micPos[2][1])**2) - \
                 (tdoa_rpi2*constant.speed_of_sound)
             return [e1, e2]
 
@@ -105,10 +105,10 @@ def genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2):
     # defines a meshgrid of x and y, to produce meshgrids h_rpi1_test, h_rpi2_test for plotting
     x, y = meshgrid(arange(0, 0.8, 0.8/100), arange(0, 0.5, 0.5/100))
     # testing rpi 1
-    h_rpi1_test = sqrt((x-micPos[0][0])**2+(y-micPos[0][0])**2) - sqrt((x-micPos[1][0])**2+(y-micPos[1][0])**2) - \
+    h_rpi1_test = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[1][0])**2+(y-micPos[1][1])**2) - \
         (tdoa_rpi1*constant.speed_of_sound)
     # testing rpi 2
-    h_rpi2_test = sqrt((x-micPos[0][0])**2+(y-micPos[0][0])**2) - sqrt((x-micPos[2][0])**2+(y-micPos[2][0])**2) - \
+    h_rpi2_test = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[2][0])**2+(y-micPos[2][1])**2) - \
         (tdoa_rpi2*constant.speed_of_sound)
     
     return [x, y, h_rpi1_test, h_rpi2_test]
