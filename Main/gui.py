@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 import threading
 import time
 import queue
-import Localize as loc
+import localize as loc
 import random
-import next_byte as next
+import next_byte
 
 
 # some useful global variables
@@ -36,8 +36,8 @@ threadQueue = queue.Queue(maxsize=1)
 
 
 def generate_random_points():
-    next.inform_ready("192.168.137.132", "rpi1")
-    next.wait_trans("Main/rpi1_finnished.txt", "Main/rpi2_finnished.txt")
+    next_byte.inform_ready("192.168.137.132", "rpi1")
+    next_byte.wait_trans("Main/rpi1_finnished.txt", "Main/rpi2_finnished.txt")
 
     x, y = loc.localize("Main/bytes/rpi1_next_byte.wav",
                         "Main/bytes/rpi2_next_byte.wav", False)
