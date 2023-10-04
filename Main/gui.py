@@ -84,9 +84,9 @@ def continuous(event, values):
     if event == "-START-":
         paused = not paused
         if paused:
-            window['-START-'].update(text='Resume')
+            mainWindow['-START-'].update(text='Resume')
         else:
-            window['-START-'].update(text='Pause')
+            mainWindow['-START-'].update(text='Pause')
             nextSamplingTime = time.time()  # set the new "start" sampling time
             readyManualControl = True
             samplingPeriodDone = True  # ready for a sample
@@ -100,16 +100,16 @@ def continuous(event, values):
 
 def singleShot(event, values):
     global paused
-    global window
+    global mainWindow
     global readyManualControl
 
     paused = True
 
-    window['-START-'].update(text='Start')
+    mainWindow['-START-'].update(text='Start')
 
     if event == "-START-":
         readyManualControl = True
-        window["-START-"].update(disabled=True)
+        mainWindow["-START-"].update(disabled=True)
 
 
 def updatePlot(ax, data):
@@ -133,14 +133,9 @@ def updatePlot(ax, data):
     # add code here to plot hyperbolas based on data[2:4]
 
 
-def updateMessage(messageText):
-    global window
-
-    window["-MESSAGE-"].update(value=messageText)
-
 
 def updateSamplingFrequency(values):
-    global window
+    global mainWindow
     global samplingPeriod
 
     try:
@@ -150,27 +145,13 @@ def updateSamplingFrequency(values):
         if values["-USESAMPLINGPERIOD-"]:
             samplingPeriod = newVal*1e-3
 
-        updateMessage("Sample rate updated")
+        mainWindow["-MESSAGE-"].update(value="Sample rate updated")
 
     except ValueError:
-        updateMessage("Invalid sample rate entered")
+        mainWindow["-MESSAGE-"].update(value="Invalid sample rate entered")
 
-
-def main():
-    global threadQueue
-    global plotSize
-    global readyManualControl
-    global readyDataCollection
-    global nextSamplingTime
-    global newPlot
-    global plotHyperbolas
-    global paused
-    global window
-    global checkSyncDelay
-
-    sg.theme('LightBlue6')   # Add a touch of color
-
-    # All the stuff inside the window.
+def makeMainWindow():
+    # All the stuff inside the mainWindow.
     layout = [  # canvas for matplotlib plot
         [sg.Canvas(size=plotSize, key="-CANVAS-")],
 
@@ -204,15 +185,85 @@ def main():
         # Horizontal separator
         [sg.HorizontalSeparator()],
 
+        [sg.Button("Subsystem tests", key="-TESTS-")],
+
         # output message
         [sg.Text("", key="-MESSAGE-")]
     ]
 
-    # Create the Window
-    window = sg.Window('Acoustic triangulation', layout, finalize=True)
+    return sg.Window('Acoustic triangulation', layout, finalize=True)
+
+def makeTestsWindow():
+    layout = [
+        ### Sync test
+        [sg.Text("Pi Synchronisation Test")],
+
+        [sg.Button("Go", key="-SYNCTEST-"), sg.Text("", key="-TIME1-"), sg.Text("", key="-TIME2-")],
+
+        [sg.HorizontalSeparator()],
+
+        ### Signal acquisition test
+        [sg.Text("Signal Acquisition Test")], 
+
+        [sg.Button("Go", key="-SIGNALTEST-")], 
+         
+        [sg.HorizontalSeparator()], 
+
+        ### TDOA test
+        [sg.Text("TDOA test")], 
+
+        [sg.Button("Go", key="-TDOATEST-"), sg.Text("x: "), sg.Input(key="-TDOATESTX-"), 
+         sg.Text("y: "), sg.Input(key="-TDOATESTY-")], 
+
+        [sg.Text("Estimated TDOAs: ", key="-ESTTDOAS-")], 
+        [sg.Text("Actual TDOAS: ", key="-ACTTDOAS-")],
+
+        [sg.HorizontalSeparator()],
+
+        ### Triangulation test
+        [sg.Text("Triangulation test")], 
+
+        [sg.Button("Go", key="-TRITEST-"), sg.Text("TDOA 1: "), sg.Input(key="-TRITESTTDOA1-"), 
+         sg.Text("TDOA 2: "), sg.Input(key="-TRITESTTDOA2-")]
+         
+    ]
+
+    return sg.Window('Tests window', layout, finalize=True, modal=True)
+    
+def openTestsWindow():
+    global testsWindow
+
+
+    testsWindow = makeTestsWindow()
+    while True:
+        event, values = testsWindow.read()
+
+
+        if event == sg.WIN_CLOSED:
+            break
+        
+    testsWindow.close()
+
+def main():
+    global threadQueue
+    global plotSize
+    global readyManualControl
+    global readyDataCollection
+    global nextSamplingTime
+    global newPlot
+    global plotHyperbolas
+    global paused
+    global mainWindow
+    global checkSyncDelay
+
+    sg.theme('LightBlue6')   # Add a touch of color
+
+
+    # Create the main window
+    mainWindow = makeMainWindow()
 
     # create canvas to display matplotlib plot
-    canvasElem = window['-CANVAS-']
+    canvasElem = mainWindow['-CANVAS-']
     canvas = canvasElem.TKCanvas
 
     fig, ax = plt.subplots()  # initialise matplotlib plot that will be displayed
@@ -227,9 +278,12 @@ def main():
 
     # Event Loop to process "events" and get the "values" of the inputs
     while True:
-        event, values = window.read(timeout=100)
-        if event == sg.WIN_CLOSED:  # if user closes window, exit loop
+        event, values = mainWindow.read(timeout=100)
+        if event == sg.WIN_CLOSED:  # if user closes mainWindow, exit loop
             break
+        
+        if event == "-TESTS-":
+            openTestsWindow()
 
         if values["-CONTINUOUS-"]:
             continuous(event, values)
@@ -273,9 +327,9 @@ def main():
                 message = "Syncrhonistaion delay: " + \
                     "{:.3f}".format(syncDelay) + " ms"
 
-                window["-SYNCDELAY-"].update(value=message)
+                mainWindow["-SYNCDELAY-"].update(value=message)
             else:
-                window["-SYNCDELAY-"].update(
+                mainWindow["-SYNCDELAY-"].update(
                     value="Syncrhonisation delay: N/A")
                 
             startTime = data["times"][0]
@@ -287,15 +341,15 @@ def main():
 
             message = "Update time: " + \
                 "{:.3f}".format(endTime - startTime) + " s"
-            window["-UPDATETIME-"].update(value=message)
+            mainWindow["-UPDATETIME-"].update(value=message)
 
             
 
             # disable single-shot start button until data is ready to be plotted
             if values["-SINGLESHOT-"]:
-                window["-START-"].update(disabled=False)
+                mainWindow["-START-"].update(disabled=False)
 
-    window.close()
+    mainWindow.close()
 
 
 if __name__ == "__main__":
