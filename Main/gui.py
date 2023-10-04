@@ -30,6 +30,8 @@ rpi2_fin_path = "Main/rpi2_finnished.txt"
 
 nextSamplingTime = time.time()
 
+mode = "continuous"
+
 paused = True
 readyManualControl = False
 samplingPeriodDone = False
@@ -157,46 +159,39 @@ def updateSamplingFrequency(values):
     except ValueError:
         mainWindow["-MESSAGE-"].update(value="Invalid sample rate entered")
 
+def updateMicPositions(values):
+    try:
+        micPositions[0][0] = float(values["-REFMICPOSX-"])
+        micPositions[0][1] = float(values["-REFMICPOSY-"])
+        micPositions[1][0] = float(values["-PI1MICPOSX-"])
+        micPositions[1][1] = float(values["-PI1MICPOSY-"])
+        micPositions[2][0] = float(values["-PI2MICPOSX-"])
+        micPositions[2][1] = float(values["-PI2MICPOSY-"])
+
+        mainWindow["-MESSAGE-"].update(value="Mic positions updated")
+    except ValueError:
+        mainWindow["-MESSAGE-"].update(value="Invalid mic position entered")
+
+
 def makeMainWindow():
     # All the stuff inside the mainWindow.
     layout = [  # canvas for matplotlib plot
         [sg.Canvas(size=plotSize, key="-CANVAS-")],
 
         # result of sync test and system timing
-        [sg.Text("Synchronisation delay: N/A", size = (31, 1), key="-SYNCDELAY-"), 
-        sg.Text("Update time: N/A", size = (20, 1), key="-UPDATETIME-")],
+        [sg.Text("Update time: N/A", size = (20, 1), key="-UPDATETIME-"), 
+         sg.Text("", size = (31, 1), key="-SYNCDELAY-")],
 
         # start / stop button
-        [sg.Button('Start', key="-START-")],
-
-        # Horizontal separator
-        [sg.HorizontalSeparator()],
-
-        # radio buttons for continuous / single shot modes
-        [sg.Radio('Continuous', "CAPTUREMODE", default=True, key="-CONTINUOUS-", enable_events=True),
-            sg.Radio("Single-Shot", "CAPTUREMODE", default=False, key="-SINGLESHOT-", enable_events=True)],
-
-        [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-"),
-         sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-")],
-        # Horizontal separator
-        [sg.HorizontalSeparator()],
-
-        # continuous-time sampling frequency
-        [sg.Text("Sampling rate (continuous mode)"),
-            sg.Radio("Frequency (Hz)", "SAMPLINGRATEMODE",
-                     default=True, key="-USESAMPLINGFREQ-"),
-            sg.Radio("Period (ms)", "SAMPLINGRATEMODE",
-                     default=False, key="-USESAMPLINGPERIOD-"),
-            sg.Input(default_text=1, size=(8, 1), key="-SAMPLINGVAL-"), sg.Button("Update", key="-UPDATESAMPLINGVAL-")],
-
-        # Horizontal separator
-        [sg.HorizontalSeparator()],
-
-        [sg.Button("Subsystem tests", key="-TESTS-"), sg.Button(":)", key="-THEME-")],
+        [sg.Button('Start', key="-START-", size = (6, 1)), 
+        sg.Button('Config', key="-CONFIG-", size = (6, 1)), 
+        sg.Button('Tests', key ="-TESTS-", size = (6, 1))],
 
         # output message
-        [sg.Text("", key="-MESSAGE-")]
+        [sg.Text("", key="-MESSAGE-", enable_events=True)]
+        
     ]
+
 
     return sg.Window('Acoustic triangulation', layout, finalize=True, location=(700, 0))
 
@@ -236,20 +231,51 @@ def makeTestsWindow():
     ]
 
     return sg.Window('Tests window', layout, finalize=True, modal=True, location=(700, 0))
-    
-def openTestsWindow():
-    global testsWindow
+
+def makeConfigWindow():
+        layout = [
+            # mic positions
+        [sg.Text("Mic positions")], 
+        [sg.Text("Reference: ", size = (16, 1)), sg.Text("x: "), 
+         sg.Input(key = "-REFMICPOSX-", size=(10, 1)), sg.Text("y: "), 
+         sg.Input(key = "-REFMICPOSY-", size = (10, 1))], 
+        [sg.Text("Pi 1 (2nd mic): ", size = (16, 1)), sg.Text("x: "), 
+         sg.Input(key = "-PI1MICPOSX-", size=(10, 1)), sg.Text("y: "), 
+         sg.Input(key = "-PI1MICPOSY-", size = (10 ,1))], 
+        [sg.Text("Pi 2 (2nd mic): ", size = (16, 1)), sg.Text("x: "), 
+        sg.Input(key = "-PI2MICPOSX-", size=(10, 1)), sg.Text("y: "), 
+        sg.Input(key = "-PI2MICPOSY-", size = (10, 1))], 
+        [sg.Button("Update", key="-UPDATEMICPOS-")],
 
 
-    testsWindow = makeTestsWindow()
-    while True:
-        event, values = testsWindow.read()
+        # Horizontal separator
+        [sg.HorizontalSeparator()],
+
+        # radio buttons for continuous / single shot modes
+        [sg.Radio('Continuous', "CAPTUREMODE", default=True, key="-CONTINUOUS-", enable_events=True),
+            sg.Radio("Single-Shot", "CAPTUREMODE", default=False, key="-SINGLESHOT-", enable_events=True)],
 
 
-        if event == sg.WIN_CLOSED:
-            break
+        # checkboxes for plotting hyperbolas
+        [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-")],
+
+        # show sync delay
+        [sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-")],
+        # Horizontal separator
+        [sg.HorizontalSeparator()],
+
+        # continuous-time sampling frequency
+        [sg.Text("Sampling rate (continuous mode)"),
+            sg.Radio("Frequency (Hz)", "SAMPLINGRATEMODE",
+                     default=True, key="-USESAMPLINGFREQ-"),
+            sg.Radio("Period (ms)", "SAMPLINGRATEMODE",
+                     default=False, key="-USESAMPLINGPERIOD-"),
+            sg.Input(default_text=1, size=(8, 1), key="-SAMPLINGVAL-"), 
+            sg.Button("Update", key="-UPDATESAMPLINGVAL-")],        
+        ]
         
-    testsWindow.close()
+        return sg.Window('Config', layout, finalize=True, location=(700, 0))
+
 
 def main():
     global threadQueue
@@ -260,9 +286,12 @@ def main():
     global newPlot
     global plotHyperbolas
     global paused
-    global mainWindow
     global checkSyncDelay
+    global mode
 
+    global mainWindow
+    global testsWindow
+    global configWindow
 
     # remove "rpi finished" things
     if os.path.exists(rpi1_fin_path):
@@ -276,6 +305,8 @@ def main():
 
     # Create the main window
     mainWindow = makeMainWindow()
+    configWindow = None
+    testsWindow = None
 
     # create canvas to display matplotlib plot
     canvasElem = mainWindow['-CANVAS-']
@@ -293,14 +324,28 @@ def main():
 
     # Event Loop to process "events" and get the "values" of the inputs
     while True:
-        event, values = mainWindow.read(timeout=100)
+        window, event, values = sg.read_all_windows(timeout=100)
+        if event == "__TIMEOUT__":
+            continue
+
         if event == sg.WIN_CLOSED:  # if user closes mainWindow, exit loop
-            break
+            if window == mainWindow:
+                break
+            if window == configWindow:
+                configWindow.close()
+                configWindow = None
+            if window == testsWindow:
+                testsWindow.close()
+                testsWindow = None
         
-        if event == "-THEME-":
+
+        ### Easter egg
+        if event == "-MESSAGE-":
             mainWindow.close()
+            configWindow.close()
             sg.theme(random.choice(sg.theme_list()))
             mainWindow = makeMainWindow()
+            configWindow = makeConfigWindow()
 
             canvasElem = mainWindow['-CANVAS-']
             canvas = canvasElem.TKCanvas
@@ -310,16 +355,35 @@ def main():
             ax.set_ylim([0, 0.5])
             figAgg = draw_figure(canvas, fig)
 
-        if event == "-TESTS-":
-            openTestsWindow()
+        if event == "-TESTS-" and testsWindow is None:
+            testsWindow = makeTestsWindow()
+        
+        if event == "-CONFIG-" and configWindow is None:
+            configWindow = makeConfigWindow()
+        
+        # update config settings
+        if window == configWindow:
+            if values["-CONTINUOUS-"]:
+                mode = "continuous"
 
-        if values["-CONTINUOUS-"]:
-            continuous(event, values)
-        elif values["-SINGLESHOT-"]:
-            singleShot(event, values)
+            elif values["-SINGLESHOT-"]:
+                mode = "singleshot"
+
+            checkSyncDelay = values["-CHECKSYNCDELAY-"]
+            plotHyperbolas = values["-PLOTHYPERBOLAS-"]
 
         if event == "-UPDATESAMPLINGVAL-":
             updateSamplingFrequency(values)
+        
+        if event == "-UPDATEMICPOS-":
+            updateMicPositions(values)
+        
+        if mode == "continuous":
+            continuous(event, values)
+        elif mode == "singleshot":
+            singleShot(event, values)
+
+        
 
         try:
             data = threadQueue.get_nowait()  # attempt to get new data from queue
@@ -334,9 +398,6 @@ def main():
         # implemented separately so that a separate sample rate flag can also be used
         if readyDataCollection and readyManualControl:
             startTime = time.time()
-
-            checkSyncDelay = values["-CHECKSYNCDELAY-"]
-            plotHyperbolas = values["-PLOTHYPERBOLAS-"]
             readyDataCollection = False
             readyManualControl = False
             dataCollectionThread = threading.Thread(
@@ -361,9 +422,12 @@ def main():
                         "{:.3f}".format(syncDelay) + " ms"
 
                     mainWindow["-SYNCDELAY-"].update(value=message)
+                elif not checkSyncDelay:
+                    mainWindow["-SYNCDELAY-"].update(
+                        value="")
                 else:
                     mainWindow["-SYNCDELAY-"].update(
-                        value="Syncrhonisation delay: N/A")
+                        value="Synchronisation delay: Error")
                     
                 startTime = data["times"][0]
                 
@@ -379,9 +443,9 @@ def main():
                 
 
             # disable single-shot start button until data is ready to be plotted
-            if values["-SINGLESHOT-"]:
+            if mode == "singleshot":
                 mainWindow["-START-"].update(disabled=False)
-
+    
     mainWindow.close()
 
 
