@@ -55,7 +55,7 @@ threadQueue = queue.Queue(maxsize=1)
 # used to initialise the matplotlib plot that is shown in the gui
 
 
-def draw_figure(canvas, figure, loc=(0, 0)):
+def drawFigure(canvas, figure, loc=(0, 0)):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
     figure_canvas_agg.draw()
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
@@ -190,8 +190,8 @@ def signalAcquisitionTest(event, values):
     global rpi2_byte_path
     global rpi1_ip
 
-    next_byte.inform_ready(rpi1_ip, "rpi1")
-    next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
+    # next_byte.inform_ready(rpi1_ip, "rpi1")
+    # next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
 
     results = loc.signalAquisitionTest(rpi1_byte_path, rpi2_byte_path)
 
@@ -209,12 +209,12 @@ def signalAcquisitionTest(event, values):
     axes[1][0].plot(results["original"][2], color = "r")
     axes[1][1].plot(results["original"][3], color = "m")
 
-    figAgg = draw_figure(canvas, fig)
+    figAgg = drawFigure(canvas, fig)
 
     while True:
-        event, values = testsPlotWindow.read()
+        eventTest, valuesTest = testsPlotWindow.read()
 
-        if event == sg.WIN_CLOSED:
+        if eventTest == sg.WIN_CLOSED:
             testsPlotWindow.close()
             break
 
@@ -231,12 +231,12 @@ def signalAcquisitionTest(event, values):
     axes[1][0].plot(results["processed"][2], color = "r")
     axes[1][1].plot(results["processed"][3], color = "m")
 
-    figAgg = draw_figure(canvas, fig)
+    figAgg = drawFigure(canvas, fig)
 
     while True:
-        event, values = testsPlotWindow.read()
+        eventTest, valuesTest = testsPlotWindow.read()
 
-        if event == sg.WIN_CLOSED:
+        if eventTest == sg.WIN_CLOSED:
             testsPlotWindow.close()
             break
 
@@ -268,7 +268,55 @@ def tdoaTest(event, values):
     testsWindow["-TDOAERR-"].update(value = err)
 
 
+def triangulationTest(event, values):
+    global testsWindow
+    global micPositions
+    global testsPlotWindow
+    global plotHyperbolas
 
+    try:
+        x = float(values["-TRITESTX-"])
+        y = float(values["-TRITESTY-"])
+
+        result = loc.triangulationTest(x, y, micPositions)
+
+        err = "{:.7f}".format(result["percentError"][0])
+        testsWindow["-TRIERR-"].update(value = err)
+
+        if values["-TRIPLOT-"]:
+
+            testsPlotWindow = makeTestsPlotWindow("Triangulation test")
+
+            fig, ax = plt.subplots()
+
+            canvasElem = testsPlotWindow['-TESTSCANVAS-']
+            canvas = canvasElem.TKCanvas
+
+            # temporarily manually set plot hyperbolas to true, save prev state for reset afterwards
+            plotHyperbolasPrev = plotHyperbolas
+
+            plotHyperbolas = True
+
+            updatePlot(ax, result)
+
+            figAgg = drawFigure(canvas, fig)
+
+            plotHyperbolas = plotHyperbolasPrev
+
+            while True:
+                eventTest, valuesTest = testsPlotWindow.read()
+
+                if eventTest == sg.WIN_CLOSED:
+                    testsPlotWindow.close()
+                    break
+
+
+
+
+    except ValueError:
+        err = "Invalid coordinates"
+    
+    testsWindow["-TRIERR-"].update(value = err)
 
 def makeMainWindow():
     # All the stuff inside the mainWindow.
@@ -324,8 +372,13 @@ def makeTestsWindow():
         # Triangulation test
         [sg.Text("Triangulation test")],
 
-        [sg.Button("Go", key="-TRITEST-"), sg.Text("TDOA 1: "), sg.Input(key="-TRITESTTDOA1-"),
-         sg.Text("TDOA 2: "), sg.Input(key="-TRITESTTDOA2-")]
+        [sg.Button("Go", key="-TRITEST-"), sg.Text("x: "), sg.Input(key="-TRITESTX-"),
+         sg.Text("y: "), sg.Input(key="-TRITESTY-")], 
+
+
+        [sg.Checkbox("Show plot", key="-TRIPLOT-")],
+        [sg.Text("Percentage error: ", size=(20, 1)), sg.Text("", key="-TRIERR-")]
+        
 
     ]
 
@@ -425,7 +478,7 @@ def main():
     ax.grid(True)
     ax.set_xlim([0, 0.8])
     ax.set_ylim([0, 0.5])
-    figAgg = draw_figure(canvas, fig)
+    figAgg = drawFigure(canvas, fig)
 
     # some booleans for control within while loop
 
@@ -459,7 +512,7 @@ def main():
             ax.grid(True)
             ax.set_xlim([0, 0.8])
             ax.set_ylim([0, 0.5])
-            figAgg = draw_figure(canvas, fig)
+            figAgg = drawFigure(canvas, fig)
 
         if event == "-TESTS-" and testsWindow is None:
             testsWindow = makeTestsWindow()
@@ -490,6 +543,9 @@ def main():
 
         if event == "-SIGNALTEST-":
             signalAcquisitionTest(event, values)
+
+        if event == "-TRITEST-":
+            triangulationTest(event, values)
         
         ### Implementation of main window events
 

@@ -150,7 +150,7 @@ def signalAquisitionTest(path1, path2):
     rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = processSignal(
         rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
 
-    returnDict["result"] += [rpi1_chan_1,
+    returnDict["processed"] += [rpi1_chan_1,
                              rpi1_chan_2, rpi2_chan_1, rpi2_chan_2]
 
     return returnDict
