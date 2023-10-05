@@ -240,7 +240,32 @@ def signalAcquisitionTest(event, values):
             testsPlotWindow.close()
             break
 
+def tdoaTest(event, values):
+    global testsWindow
+    global micPositions
+    global rpi1_byte_path
+    global rpi2_byte_path
 
+    try:
+        x = float(values["-TDOATESTX-"])
+        y = float(values["-TDOATESTY-"])
+
+        result = loc.tdoaTest(x, y, rpi1_byte_path, rpi2_byte_path, micPositions)
+
+        est = "{:.7f} {:.7f}".format(result["estiTdoa"][0], result["estiTdoa"][1])
+        act = "{:.7f} {:.7f}".format(result["actualTdoa"][0], result["actualTdoa"][1])
+        err = "{:.7f} {:.7f}".format(result["percentError"][0], result["percentError"][1])
+
+        
+    
+    except ValueError:
+        est = "Invalid coordinates"
+        act = "Invalid coordinates"
+        err = "Invalid coordinates"
+    
+    testsWindow["-ESTTDOAS-"].update(value = est)
+    testsWindow["-ACTTDOAS-"].update(value = act)
+    testsWindow["-TDOAERR-"].update(value = err)
 
 
 
@@ -289,8 +314,10 @@ def makeTestsWindow():
         [sg.Button("Go", key="-TDOATEST-"), sg.Text("x: "), sg.Input(key="-TDOATESTX-"),
          sg.Text("y: "), sg.Input(key="-TDOATESTY-")],
 
-        [sg.Text("Estimated TDOAs: ", key="-ESTTDOAS-")],
-        [sg.Text("Actual TDOAS: ", key="-ACTTDOAS-")],
+        
+        [sg.Text("Theoretical TDOAS: ", size=(20, 1)), sg.Text("", key="-ACTTDOAS-")],
+        [sg.Text("Calculated TDOAs: ", size=(20,1)), sg.Text("", key="-ESTTDOAS-")],
+        [sg.Text("Percentage error: ", size=(20, 1)), sg.Text("", key="-TDOAERR-")],
 
         [sg.HorizontalSeparator()],
 
@@ -456,6 +483,10 @@ def main():
 
         if event == "-UPDATEMICPOS-":
             updateMicPositions(values)
+
+        ### IMPLEMENTATION OF TEST WINDOW EVENTS
+        if event == "-TDOATEST-":
+            tdoaTest(event, values)        
 
         if event == "-SIGNALTEST-":
             signalAcquisitionTest(event, values)
