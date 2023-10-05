@@ -56,14 +56,14 @@ def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
 
             if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
                 Valid = False
-                returnDict["errorMessage"].append("Triangluation couldn't find an intersection")
+                returnDict["errorMessage"].append("Triangluation produced a value outside of the grid")
 
         except:
             print("An exception occurred")
             Valid = False
 
         
-            returnDict["errorMessage"].append("Triangluation produced a value outside of the grid")
+            returnDict["errorMessage"].append("Triangluation failed to find an intersection")
 
     if hyperbola and Valid:
         hyperbolas = genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2)
