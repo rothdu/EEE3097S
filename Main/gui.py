@@ -114,8 +114,10 @@ def continuous(event, values):
         paused = not paused
         if paused:
             mainWindow['-START-'].update(text='Resume')
+            mainWindow["-MESSAGE-"].update(value="Paused")
         else:
             mainWindow['-START-'].update(text='Pause')
+            mainWindow["-MESSAGE-"].update(value="Started/Resumed")
             nextSamplingTime = time.time()  # set the new "start" sampling time
             readyManualControl = True
             samplingPeriodDone = True  # ready for a sample
