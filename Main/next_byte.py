@@ -22,10 +22,13 @@ def delay_test(pi_ip, pi_name):
 
 
 def wait_trans(rpi1_fin_path, rpi2_fin_path):
+    startTime = time.time() + 15
     while not (os.path.exists(rpi1_fin_path) and os.path.exists(rpi2_fin_path)):
-        time.sleep(0.000001)
+        if time.time() > startTime:
+            return False
     os.remove(rpi1_fin_path)
     os.remove(rpi2_fin_path)
+    return True
 
 
 def find_delay():
@@ -37,7 +40,7 @@ def find_delay():
         # Read the entire contents of the file into a string
         time_2 = float(file.read())
 
-    return time_2-time_1
+    return time_1, time_2, time_2-time_1
 
 
 def main():

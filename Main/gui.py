@@ -31,7 +31,7 @@ rpi2_fin_path = "Main/rpi2_finnished.txt"
 rpi1_byte_path = "Main/bytes/rpi1_next_byte.wav"
 rpi2_byte_path = "Main/bytes/rpi2_next_byte.wav"
 
-rpi1_ip = "192.168.137.132"
+rpi1_ip = "192.168.137.99"
 
 nextSamplingTime = time.time()
 
@@ -73,7 +73,8 @@ def locate(startTime):
     global rpi1_ip
 
     next_byte.inform_ready(rpi1_ip, "rpi1")
-    next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
+    if not (next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)):
+
 
     try:
         result = loc.localize(rpi1_byte_path,
@@ -181,6 +182,22 @@ def updateMicPositions(values):
         mainWindow["-MESSAGE-"].update(value="Invalid mic position entered")
 
 
+def syncTest(event, values):
+    global testsWindow
+    global rpi1_ip
+    global rpi1_fin_path
+    global rpi2_fin_path
+
+    next_byte.delay_test(rpi1_ip, "rpi1")
+    next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
+
+    time1, time2, diff = next_byte.find_delay()
+
+    testsWindow["-SYNCTIME1-"].update(value=str(time1))
+    testsWindow["-SYNCTIME2-"].update(value=str(time2))
+    testsWindow["-SYNCTIMEDIFF-"].update(value=str(diff))
+
+
 def signalAcquisitionTest(event, values):
     global testsWindow
     global testsPlotWindow
@@ -190,24 +207,24 @@ def signalAcquisitionTest(event, values):
     global rpi2_byte_path
     global rpi1_ip
 
-    # next_byte.inform_ready(rpi1_ip, "rpi1")
-    # next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
+    next_byte.inform_ready(rpi1_ip, "rpi1")
+    next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
 
     results = loc.signalAquisitionTest(rpi1_byte_path, rpi2_byte_path)
 
-
     testsPlotWindow = makeTestsPlotWindow("Signal Acquisition Test")
 
     canvasElem = testsPlotWindow['-TESTSCANVAS-']
     canvas = canvasElem.TKCanvas
 
-    fig, axes = plt.subplots(2, 2)  # initialise matplotlib plot that will be displayed
+    # initialise matplotlib plot that will be displayed
+    fig, axes = plt.subplots(2, 2)
 
     # can add additional plotting here
-    axes[0][0].plot(results["original"][0], color = "b")
-    axes[0][1].plot(results["original"][1], color = "g")
-    axes[1][0].plot(results["original"][2], color = "r")
-    axes[1][1].plot(results["original"][3], color = "m")
+    axes[0][0].plot(results["original"][0], color="b")
+    axes[0][1].plot(results["original"][1], color="g")
+    axes[1][0].plot(results["original"][2], color="r")
+    axes[1][1].plot(results["original"][3], color="m")
 
     figAgg = drawFigure(canvas, fig)
 
@@ -223,13 +240,14 @@ def signalAcquisitionTest(event, values):
     canvasElem = testsPlotWindow['-TESTSCANVAS-']
     canvas = canvasElem.TKCanvas
 
-    fig, axes = plt.subplots(2, 2)  # initialise matplotlib plot that will be displayed
+    # initialise matplotlib plot that will be displayed
+    fig, axes = plt.subplots(2, 2)
 
     # can add additional plotting here
-    axes[0][0].plot(results["processed"][0], color = "b")
-    axes[0][1].plot(results["processed"][1], color = "g")
-    axes[1][0].plot(results["processed"][2], color = "r")
-    axes[1][1].plot(results["processed"][3], color = "m")
+    axes[0][0].plot(results["processed"][0], color="b")
+    axes[0][1].plot(results["processed"][1], color="g")
+    axes[1][0].plot(results["processed"][2], color="r")
+    axes[1][1].plot(results["processed"][3], color="m")
 
     figAgg = drawFigure(canvas, fig)
 
@@ -239,6 +257,7 @@ def signalAcquisitionTest(event, values):
         if eventTest == sg.WIN_CLOSED:
             testsPlotWindow.close()
             break
+
 
 def tdoaTest(event, values):
     global testsWindow
@@ -250,22 +269,24 @@ def tdoaTest(event, values):
         x = float(values["-TDOATESTX-"])
         y = float(values["-TDOATESTY-"])
 
-        result = loc.tdoaTest(x, y, rpi1_byte_path, rpi2_byte_path, micPositions)
+        result = loc.tdoaTest(x, y, rpi1_byte_path,
+                              rpi2_byte_path, micPositions)
 
-        est = "{:.7f} {:.7f}".format(result["estiTdoa"][0], result["estiTdoa"][1])
-        act = "{:.7f} {:.7f}".format(result["actualTdoa"][0], result["actualTdoa"][1])
-        err = "{:.7f} {:.7f}".format(result["percentError"][0], result["percentError"][1])
+        est = "{:.7f} {:.7f}".format(
+            result["estiTdoa"][0], result["estiTdoa"][1])
+        act = "{:.7f} {:.7f}".format(
+            result["actualTdoa"][0], result["actualTdoa"][1])
+        err = "{:.7f} {:.7f}".format(
+            result["percentError"][0], result["percentError"][1])
 
-        
-    
     except ValueError:
         est = "Invalid coordinates"
         act = "Invalid coordinates"
         err = "Invalid coordinates"
-    
-    testsWindow["-ESTTDOAS-"].update(value = est)
-    testsWindow["-ACTTDOAS-"].update(value = act)
-    testsWindow["-TDOAERR-"].update(value = err)
+
+    testsWindow["-ESTTDOAS-"].update(value=est)
+    testsWindow["-ACTTDOAS-"].update(value=act)
+    testsWindow["-TDOAERR-"].update(value=err)
 
 
 def triangulationTest(event, values):
@@ -281,7 +302,7 @@ def triangulationTest(event, values):
         result = loc.triangulationTest(x, y, micPositions)
 
         err = "{:.7f}".format(result["percentError"][0])
-        testsWindow["-TRIERR-"].update(value = err)
+        testsWindow["-TRIERR-"].update(value=err)
 
         if values["-TRIPLOT-"]:
 
@@ -310,13 +331,11 @@ def triangulationTest(event, values):
                     testsPlotWindow.close()
                     break
 
-
-
-
     except ValueError:
         err = "Invalid coordinates"
-    
-    testsWindow["-TRIERR-"].update(value = err)
+
+    testsWindow["-TRIERR-"].update(value=err)
+
 
 def makeMainWindow():
     # All the stuff inside the mainWindow.
@@ -345,7 +364,11 @@ def makeTestsWindow():
         # Sync test
         [sg.Text("Pi Synchronisation Test")],
 
-        [sg.Button("Go", key="-SYNCTEST-"), sg.Text("",key="-TIME1-"), sg.Text("", key="-TIME2-")],
+        [sg.Button("Go", key="-SYNCTEST-")],
+        [sg.Text("Time 1:", size=(18, 1)), sg.Text("", key="-SYNCTIME1-")],
+        [sg.Text("Time 2:", size=(18, 1)), sg.Text("", key="-SYNCTIME2-")],
+        [sg.Text("Time Difference: ", size=(18, 1)),
+         sg.Text("", key="-SYNCTIMEDIFF-")],
 
         [sg.HorizontalSeparator()],
 
@@ -362,10 +385,13 @@ def makeTestsWindow():
         [sg.Button("Go", key="-TDOATEST-"), sg.Text("x: "), sg.Input(key="-TDOATESTX-"),
          sg.Text("y: "), sg.Input(key="-TDOATESTY-")],
 
-        
-        [sg.Text("Theoretical TDOAS: ", size=(20, 1)), sg.Text("", key="-ACTTDOAS-")],
-        [sg.Text("Calculated TDOAs: ", size=(20,1)), sg.Text("", key="-ESTTDOAS-")],
-        [sg.Text("Percentage error: ", size=(20, 1)), sg.Text("", key="-TDOAERR-")],
+
+        [sg.Text("Theoretical TDOAS: ", size=(20, 1)),
+         sg.Text("", key="-ACTTDOAS-")],
+        [sg.Text("Calculated TDOAs: ", size=(20, 1)),
+         sg.Text("", key="-ESTTDOAS-")],
+        [sg.Text("Percentage error: ", size=(20, 1)),
+         sg.Text("", key="-TDOAERR-")],
 
         [sg.HorizontalSeparator()],
 
@@ -373,12 +399,13 @@ def makeTestsWindow():
         [sg.Text("Triangulation test")],
 
         [sg.Button("Go", key="-TRITEST-"), sg.Text("x: "), sg.Input(key="-TRITESTX-"),
-         sg.Text("y: "), sg.Input(key="-TRITESTY-")], 
+         sg.Text("y: "), sg.Input(key="-TRITESTY-")],
 
 
         [sg.Checkbox("Show plot", key="-TRIPLOT-")],
-        [sg.Text("Percentage error: ", size=(20, 1)), sg.Text("", key="-TRIERR-")]
-        
+        [sg.Text("Percentage error: ", size=(20, 1)),
+         sg.Text("", key="-TRIERR-")]
+
 
     ]
 
@@ -393,6 +420,7 @@ def makeTestsPlotWindow(windowName):
 
     return sg.Window(windowName, layout, finalize=True, location=(700, 0), modal=True)
 
+
 def makeConfigWindow():
     layout = [
 
@@ -402,10 +430,12 @@ def makeConfigWindow():
 
 
         # checkboxes for plotting hyperbolas
-        [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-", enable_events=True)],
+        [sg.Checkbox("Plot hyperbolas", default=False,
+                     key="-PLOTHYPERBOLAS-", enable_events=True)],
 
         # show sync delay
-        [sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-", enable_events=True)],
+        [sg.Checkbox("Calculate synchronisation delay", default=False,
+                     key="-CHECKSYNCDELAY-", enable_events=True)],
 
         # Horizontal separator
         [sg.HorizontalSeparator()],
@@ -419,7 +449,7 @@ def makeConfigWindow():
          sg.Input(default_text=1, size=(8, 1), key="-SAMPLINGVAL-"),
          sg.Button("Update", key="-UPDATESAMPLINGVAL-")],
 
-        
+
         # Horizontal separator
         [sg.HorizontalSeparator()],
 
@@ -537,17 +567,20 @@ def main():
         if event == "-UPDATEMICPOS-":
             updateMicPositions(values)
 
-        ### IMPLEMENTATION OF TEST WINDOW EVENTS
+        # IMPLEMENTATION OF TEST WINDOW EVENTS
         if event == "-TDOATEST-":
-            tdoaTest(event, values)        
+            tdoaTest(event, values)
 
         if event == "-SIGNALTEST-":
             signalAcquisitionTest(event, values)
 
         if event == "-TRITEST-":
             triangulationTest(event, values)
-        
-        ### Implementation of main window events
+
+        if event == "-SYNCTEST-":
+            syncTest(event, values)
+
+        # Implementation of main window events
 
         if mode == "continuous":
             continuous(event, values)
@@ -579,10 +612,12 @@ def main():
             if len(data["result"]) == 0:
 
                 # print an error message based on localise function
-                if len(data("errorMessage")) == 0:
-                    mainWindow["-MESSAGE-"].update(value="Error: Unknown error")
+                if len(data["errorMessage"]) == 0:
+                    mainWindow["-MESSAGE-"].update(
+                        value="Error: Unknown error")
                 else:
-                    mainWindow["-MESSAGE-"].update(value= ("Error: " + data["errorMessage"][0]))
+                    mainWindow["-MESSAGE-"].update(
+                        value=("Error: " + data["errorMessage"][0]))
             else:
 
                 updatePlot(ax, data)
