@@ -85,6 +85,11 @@ def locate(startTime):
 
         next_byte.inform_ready(rpi1_ip, "rpi1")
         if (next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)):
+            result = loc.localize(rpi1_byte_path,
+                                  rpi2_byte_path, micPositions, startTime,
+                                  hyperbola=plotHyperbolas, refTDOA=checkSyncDelay)
+
+        else:
             result = {
                 "result": [],
                 "hyperbola": [],
@@ -92,10 +97,6 @@ def locate(startTime):
                 "times": [startTime],
                 "errorMessage": ["Failed to acquire signal"]
             }
-        else:
-            result = loc.localize(rpi1_byte_path,
-                                  rpi2_byte_path, micPositions, startTime,
-                                  hyperbola=plotHyperbolas, refTDOA=checkSyncDelay)
 
     try:
 
