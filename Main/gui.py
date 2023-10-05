@@ -37,15 +37,16 @@ nextSamplingTime = time.time()
 
 mode = "continuous"
 
-paused = True
+
 readyManualControl = False
 samplingPeriodDone = False
 readyDataCollection = True
 newPlot = False
 
-
+paused = True
 checkSyncDelay = False
 plotHyperbolas = False
+dummyMode = False
 
 threadQueue = queue.Queue(maxsize=1)
 
@@ -72,14 +73,24 @@ def locate(startTime):
     global rpi2_byte_path
     global rpi1_ip
 
-    next_byte.inform_ready(rpi1_ip, "rpi1")
-    if not (next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)):
+    if dummyMode:
+        result = {
+            "result": [random.uniform(0, 0.8), random.uniform(0, 0.5)],
+            "hyperbola": [],
+            "reftdoa": [],
+            "times": [startTime],
+            "errorMessage": []
+        }
+    else:
 
-
-    try:
+        next_byte.inform_ready(rpi1_ip, "rpi1")
+        next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
         result = loc.localize(rpi1_byte_path,
                               rpi2_byte_path, micPositions, startTime,
                               hyperbola=plotHyperbolas, refTDOA=checkSyncDelay)
+
+    try:
+
         threadQueue.put_nowait(result)
     except queue.Full:
         print("attempted to add multiple data to queue!!!")
@@ -103,8 +114,10 @@ def continuous(event, values):
         paused = not paused
         if paused:
             mainWindow['-START-'].update(text='Resume')
+            mainWindow["-MESSAGE-"].update(value="Paused")
         else:
             mainWindow['-START-'].update(text='Pause')
+            mainWindow["-MESSAGE-"].update(value="Started/Resumed")
             nextSamplingTime = time.time()  # set the new "start" sampling time
             readyManualControl = True
             samplingPeriodDone = True  # ready for a sample
@@ -437,6 +450,9 @@ def makeConfigWindow():
         [sg.Checkbox("Calculate synchronisation delay", default=False,
                      key="-CHECKSYNCDELAY-", enable_events=True)],
 
+        [sg.Checkbox("Dummy mode (random points)", default=False,
+                     key="-DUMMYMODE-", enable_events=True)],
+
         # Horizontal separator
         [sg.HorizontalSeparator()],
 
@@ -486,6 +502,7 @@ def main():
     global mainWindow
     global testsWindow
     global configWindow
+    global dummyMode
 
     # remove "rpi finished" things
     if os.path.exists(rpi1_fin_path):
@@ -560,6 +577,7 @@ def main():
 
             checkSyncDelay = values["-CHECKSYNCDELAY-"]
             plotHyperbolas = values["-PLOTHYPERBOLAS-"]
+            dummyMode = values["-DUMMYMODE-"]
 
         if event == "-UPDATESAMPLINGVAL-":
             updateSamplingFrequency(values)
