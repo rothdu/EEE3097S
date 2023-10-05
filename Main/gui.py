@@ -28,6 +28,11 @@ micPositions = [[0, 0.5], [0.8, 0.5], [0, 0]]
 rpi1_fin_path = "Main/rpi1_finnished.txt"
 rpi2_fin_path = "Main/rpi2_finnished.txt"
 
+rpi1_byte_path = "Main/bytes/rpi1_next_byte.wav"
+rpi2_byte_path = "Main/bytes/rpi2_next_byte.wav"
+
+rpi1_ip = "192.168.137.132"
+
 nextSamplingTime = time.time()
 
 mode = "continuous"
@@ -63,13 +68,16 @@ def locate(startTime):
     global plotHyperbolas
     global rpi1_fin_path
     global rpi2_fin_path
+    global rpi1_byte_path
+    global rpi2_byte_path
+    global rpi1_ip
 
-    next_byte.inform_ready("192.168.137.132", "rpi1")
+    next_byte.inform_ready(rpi1_ip, "rpi1")
     next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
 
     try:
-        result = loc.localize("Main/bytes/rpi1_next_byte.wav",
-                              "Main/bytes/rpi2_next_byte.wav", micPositions, startTime,
+        result = loc.localize(rpi1_byte_path,
+                              rpi2_byte_path, micPositions, startTime,
                               hyperbola=plotHyperbolas, refTDOA=checkSyncDelay)
         threadQueue.put_nowait(result)
     except queue.Full:
@@ -173,6 +181,72 @@ def updateMicPositions(values):
         mainWindow["-MESSAGE-"].update(value="Invalid mic position entered")
 
 
+def signalAcquisitionTest(event, values):
+    global testsWindow
+    global testsPlotWindow
+    global rpi1_fin_path
+    global rpi2_fin_path
+    global rpi1_byte_path
+    global rpi2_byte_path
+    global rpi1_ip
+
+    next_byte.inform_ready(rpi1_ip, "rpi1")
+    next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
+
+    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = loc.readSignal(rpi1_byte_path, rpi2_byte_path)
+
+
+    testsPlotWindow = makeTestsPlotWindow("Signal Acquisition Test")
+
+    canvasElem = testsPlotWindow['-TESTSCANVAS-']
+    canvas = canvasElem.TKCanvas
+
+    fig, axes = plt.subplots(2, 2)  # initialise matplotlib plot that will be displayed
+
+    # can add additional plotting here
+    axes[0][0].plot(rpi1_chan_1, color = "b")
+    axes[0][1].plot(rpi1_chan_2, color = "g")
+    axes[1][0].plot(rpi2_chan_1, color = "r")
+    axes[1][1].plot(rpi2_chan_2, color = "m")
+
+    figAgg = draw_figure(canvas, fig)
+
+    while True:
+        event, values = testsPlotWindow.read()
+
+        if event == sg.WIN_CLOSED:
+            testsPlotWindow.close()
+            break
+    
+    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = loc.processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
+
+    testsPlotWindow = makeTestsPlotWindow("Signal Acquisition Test")
+
+    canvasElem = testsPlotWindow['-TESTSCANVAS-']
+    canvas = canvasElem.TKCanvas
+
+    fig, axes = plt.subplots(2, 2)  # initialise matplotlib plot that will be displayed
+
+    # can add additional plotting here
+    axes[0][0].plot(rpi1_chan_1, color = "b")
+    axes[0][1].plot(rpi1_chan_2, color = "g")
+    axes[1][0].plot(rpi2_chan_1, color = "r")
+    axes[1][1].plot(rpi2_chan_2, color = "m")
+
+    figAgg = draw_figure(canvas, fig)
+
+    while True:
+        event, values = testsPlotWindow.read()
+
+        if event == sg.WIN_CLOSED:
+            testsPlotWindow.close()
+            break
+
+
+
+
+
+
 def makeMainWindow():
     # All the stuff inside the mainWindow.
     layout = [  # canvas for matplotlib plot
@@ -200,8 +274,7 @@ def makeTestsWindow():
         # Sync test
         [sg.Text("Pi Synchronisation Test")],
 
-        [sg.Button("Go", key="-SYNCTEST-"), sg.Text("",
-                                                    key="-TIME1-"), sg.Text("", key="-TIME2-")],
+        [sg.Button("Go", key="-SYNCTEST-"), sg.Text("",key="-TIME1-"), sg.Text("", key="-TIME2-")],
 
         [sg.HorizontalSeparator()],
 
@@ -234,8 +307,44 @@ def makeTestsWindow():
     return sg.Window('Tests window', layout, finalize=True, modal=True, location=(700, 0))
 
 
+def makeTestsPlotWindow(windowName):
+    global plotSize
+    layout = [  # canvas for matplotlib plot
+        [sg.Canvas(size=plotSize, key="-TESTSCANVAS-")],
+    ]
+
+    return sg.Window(windowName, layout, finalize=True, location=(700, 0), modal=True)
+
 def makeConfigWindow():
     layout = [
+
+        # radio buttons for continuous / single shot modes
+        [sg.Radio('Continuous', "CAPTUREMODE", default=True, key="-CONTINUOUS-", enable_events=True),
+         sg.Radio("Single-Shot", "CAPTUREMODE", default=False, key="-SINGLESHOT-", enable_events=True)],
+
+
+        # checkboxes for plotting hyperbolas
+        [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-", enable_events=True)],
+
+        # show sync delay
+        [sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-", enable_events=True)],
+
+        # Horizontal separator
+        [sg.HorizontalSeparator()],
+
+        # continuous-time sampling frequency
+        [sg.Text("Sampling rate (continuous mode)"),
+         sg.Radio("Frequency (Hz)", "SAMPLINGRATEMODE",
+                  default=True, key="-USESAMPLINGFREQ-"),
+         sg.Radio("Period (ms)", "SAMPLINGRATEMODE",
+                  default=False, key="-USESAMPLINGPERIOD-"),
+         sg.Input(default_text=1, size=(8, 1), key="-SAMPLINGVAL-"),
+         sg.Button("Update", key="-UPDATESAMPLINGVAL-")],
+
+        
+        # Horizontal separator
+        [sg.HorizontalSeparator()],
+
         # mic positions
         [sg.Text("Mic positions")],
         [sg.Text("Reference: ", size=(16, 1)), sg.Text("x: "),
@@ -249,31 +358,6 @@ def makeConfigWindow():
          sg.Input(key="-PI2MICPOSY-", size=(10, 1))],
         [sg.Button("Update", key="-UPDATEMICPOS-")],
 
-
-        # Horizontal separator
-        [sg.HorizontalSeparator()],
-
-        # radio buttons for continuous / single shot modes
-        [sg.Radio('Continuous', "CAPTUREMODE", default=True, key="-CONTINUOUS-", enable_events=True),
-         sg.Radio("Single-Shot", "CAPTUREMODE", default=False, key="-SINGLESHOT-", enable_events=True)],
-
-
-        # checkboxes for plotting hyperbolas
-        [sg.Checkbox("Plot hyperbolas", default=False, key="-PLOTHYPERBOLAS-", enable_events=True)],
-
-        # show sync delay
-        [sg.Checkbox("Calculate synchronisation delay", default=False, key="-CHECKSYNCDELAY-", enable_events=True)],
-        # Horizontal separator
-        [sg.HorizontalSeparator()],
-
-        # continuous-time sampling frequency
-        [sg.Text("Sampling rate (continuous mode)"),
-         sg.Radio("Frequency (Hz)", "SAMPLINGRATEMODE",
-                  default=True, key="-USESAMPLINGFREQ-"),
-         sg.Radio("Period (ms)", "SAMPLINGRATEMODE",
-                  default=False, key="-USESAMPLINGPERIOD-"),
-         sg.Input(default_text=1, size=(8, 1), key="-SAMPLINGVAL-"),
-         sg.Button("Update", key="-UPDATESAMPLINGVAL-")],
     ]
 
     return sg.Window('Config', layout, finalize=True, location=(700, 0))
@@ -375,6 +459,11 @@ def main():
         if event == "-UPDATEMICPOS-":
             updateMicPositions(values)
 
+        if event == "-SIGNALTEST-":
+            signalAcquisitionTest(event, values)
+        
+        ### Implementation of main window events
+
         if mode == "continuous":
             continuous(event, values)
         elif mode == "singleshot":
@@ -404,8 +493,11 @@ def main():
             newPlot = False
             if len(data["result"]) == 0:
 
-                # maybe get localise to return an error message which can be printed?
-                mainWindow["-MESSAGE-"].update(value="Error")
+                # print an error message based on localise function
+                if len(data("errorMessage")) == 0:
+                    mainWindow["-MESSAGE-"].update(value="Error: Unknown error")
+                else:
+                    mainWindow["-MESSAGE-"].update(value= ("Error: " + data["errorMessage"][0]))
             else:
 
                 updatePlot(ax, data)
@@ -430,9 +522,11 @@ def main():
 
                 endTime = time.time()
 
-                message = "Update time: " + \
+                updateTime = "Update time: " + \
                     "{:.3f}".format(endTime - startTime) + " s"
-                mainWindow["-UPDATETIME-"].update(value=message)
+                mainWindow["-UPDATETIME-"].update(value=updateTime)
+
+                mainWindow["-MESSAGE-"].update("Plotted point")
 
             # disable single-shot start button until data is ready to be plotted
             if mode == "singleshot":
