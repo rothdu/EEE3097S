@@ -193,7 +193,7 @@ def signalAcquisitionTest(event, values):
     next_byte.inform_ready(rpi1_ip, "rpi1")
     next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
 
-    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = loc.readSignal(rpi1_byte_path, rpi2_byte_path)
+    results = loc.signalAquisitionTest(rpi1_byte_path, rpi2_byte_path)
 
 
     testsPlotWindow = makeTestsPlotWindow("Signal Acquisition Test")
@@ -204,10 +204,10 @@ def signalAcquisitionTest(event, values):
     fig, axes = plt.subplots(2, 2)  # initialise matplotlib plot that will be displayed
 
     # can add additional plotting here
-    axes[0][0].plot(rpi1_chan_1, color = "b")
-    axes[0][1].plot(rpi1_chan_2, color = "g")
-    axes[1][0].plot(rpi2_chan_1, color = "r")
-    axes[1][1].plot(rpi2_chan_2, color = "m")
+    axes[0][0].plot(results["original"][0], color = "b")
+    axes[0][1].plot(results["original"][1], color = "g")
+    axes[1][0].plot(results["original"][2], color = "r")
+    axes[1][1].plot(results["original"][3], color = "m")
 
     figAgg = draw_figure(canvas, fig)
 
@@ -217,8 +217,6 @@ def signalAcquisitionTest(event, values):
         if event == sg.WIN_CLOSED:
             testsPlotWindow.close()
             break
-    
-    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = loc.processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
 
     testsPlotWindow = makeTestsPlotWindow("Signal Acquisition Test")
 
@@ -228,10 +226,10 @@ def signalAcquisitionTest(event, values):
     fig, axes = plt.subplots(2, 2)  # initialise matplotlib plot that will be displayed
 
     # can add additional plotting here
-    axes[0][0].plot(rpi1_chan_1, color = "b")
-    axes[0][1].plot(rpi1_chan_2, color = "g")
-    axes[1][0].plot(rpi2_chan_1, color = "r")
-    axes[1][1].plot(rpi2_chan_2, color = "m")
+    axes[0][0].plot(results["processed"][0], color = "b")
+    axes[0][1].plot(results["processed"][1], color = "g")
+    axes[1][0].plot(results["processed"][2], color = "r")
+    axes[1][1].plot(results["processed"][3], color = "m")
 
     figAgg = draw_figure(canvas, fig)
 
