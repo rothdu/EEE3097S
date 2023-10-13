@@ -60,9 +60,31 @@ def nTests(n, fileName):
 
         if len(result['result'] != 0):
 
-            outFile.write(result["tdoa"][0] + "," + result["tdoa"][1] + "," + result["result"][0] + "," + result["result"][1] + "\n")
+            outFile.write(str(result["tdoa"][0]) + "," + str(result["tdoa"][1]) + "," + str(result["result"][0]) + "," + str(result["result"][1]) + "\n")
         else:
             outFile.write(result["errorMessage"][0] + "\n") 
+
+
+def contTests(fileName):
+    outFile = open("tests/results/" + fileName + ".csv", "w", encoding="utf-8")
+
+    while True:
+        try:
+        
+            input("Click enter to start next test")
+
+            result = runTest(time.time())
+
+            updateTime = time.time() - result['times'][0]
+
+            if len(result['result'] != 0):
+
+                outFile.write(str(result["tdoa"][0]) + "," + str(result["tdoa"][1]) + "," + str(result["result"][0]) + "," + str(result["result"][1]) + "," + str(updateTime) + "\n" )
+            else:
+                outFile.write(result["errorMessage"][0] + "\n")
+        except KeyboardInterrupt:
+            print("Ending testing loop")
+            break 
 
 
 
@@ -107,7 +129,13 @@ def main():
             fileName = input("File name (no path or extension): ")
 
 
-            nTests(n)
+            nTests(n, fileName)
+        
+        if inpt == '2':
+            fileName = input("File name (no path or extension): ")
+
+            contTests(fileName)
+
         
         elif inpt.casefold() == 'q':
             print("Goodbye")
