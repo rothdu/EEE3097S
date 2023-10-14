@@ -73,12 +73,8 @@ def write_to_file(contents,file_name):
         for item in contents:
             file.write(str(item) + "\n")
 
-def test(max):
+def test(max,rpi1_fin_path, rpi2_fin_path, rpi1_wav,rpi2_wav):
     results = []
-    rpi1_fin_path = parent_file_fetch("rpi1_finnished.txt")
-    rpi2_fin_path = parent_file_fetch("rpi2_finnished.txt")
-    rpi1_wav = parent_file_fetch("bytes/rpi1_next_byte.wav")
-    rpi2_wav = parent_file_fetch("bytes/rpi2_next_byte.wav")
 
     for i in range(0,max):
         next_byte.inform_ready("192.168.137.99", "rpi1")
@@ -93,13 +89,14 @@ def test(max):
     results.append(ave)
     return results
 
-def parent_file_fetch(file):
-    parent = os.path.join(os.getcwd(), os.pardir)
-    return os.path.join(parent, file)
-
 def main():
-    results = test(10)
-    write_to_file(results,"sync_tdoa_results.txt")
+    rpi1_fin_path = "Main/rpi1_finnished.txt"
+    rpi2_fin_path = "Main/rpi2_finnished.txt"
+    rpi1_wav = "Main/bytes/rpi1_next_byte.wav"
+    rpi2_wav = "Main/bytes/rpi2_next_byte.wav"
+
+    results = test(10,rpi1_fin_path, rpi2_fin_path, rpi1_wav,rpi2_wav)
+    write_to_file(results,"Main/results/sync_tdoa_results.txt")
     
     
 if __name__ == "__main__":
