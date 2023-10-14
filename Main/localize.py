@@ -9,9 +9,11 @@ from scipy import signal
 from scipy.optimize import least_squares
 
 
-warnings.filterwarnings("error")
+
 
 def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
+
+    warnings.filterwarnings("error")
 
     returnDict = {
         "result": [],
@@ -62,6 +64,8 @@ def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
         try:
             ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
 
+            print(ans_arr)
+
             if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
                 Valid = False
                 returnDict["errorMessage"].append("Triangluation produced a value outside of the grid")
@@ -85,6 +89,74 @@ def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
 
     return returnDict
 
+
+def localizeTest(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
+
+    warnings.resetwarnings()
+
+    returnDict = {
+        "result": [],
+        "hyperbola": [],
+        "tdoa": [],
+        "reftdoa": [],
+        "times": [startTime],
+        "errorMessage": []
+    }
+
+    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = readSignal(
+        path1, path2)
+
+    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = processSignal(
+        rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
+
+    max_tau = 0.01
+
+    # tdoa rpi1
+    tdoa_rpi1 = gcc_phat.gcc_phat(
+        rpi1_chan_1, rpi1_chan_2, SR, max_tau)  # top left mic
+
+    # tdoa rpi2
+    tdoa_rpi2 = gcc_phat.gcc_phat(
+        rpi2_chan_1, rpi2_chan_2, SR, max_tau)  # top left mic
+    
+    returnDict["tdoa"].append(tdoa_rpi1)
+    returnDict["tdoa"].append(tdoa_rpi2)
+
+    print("tdoa_rpi1= " + str(tdoa_rpi1))
+    print("tdoa_rpi2= " + str(tdoa_rpi2))
+
+
+    def function(variables):
+        (x, y) = variables
+        e1 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[1][0])**2+(y-micPos[1][1])**2) - \
+            (tdoa_rpi1*constant.speed_of_sound)
+        e2 = sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2) - sqrt((x-micPos[2][0])**2+(y-micPos[2][1])**2) - \
+            (tdoa_rpi2*constant.speed_of_sound)
+        return [e1, e2]
+    
+    
+    ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
+
+    if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
+        Valid = False
+        returnDict["errorMessage"].append("Triangluation produced a value outside of the grid")
+
+
+
+    if hyperbola:
+        hyperbolas = genHyperbola(micPos, tdoa_rpi1, tdoa_rpi2)
+        returnDict["hyperbola"] += hyperbolas
+
+    if refTDOA:
+        tdoa_pisync = gcc_phat.gcc_phat(rpi2_chan_1, rpi1_chan_1, SR, 0.2)
+        if (tdoa_pisync != 0):
+            returnDict["reftdoa"].append(tdoa_pisync)
+
+    if True:
+        returnDict["result"].append(ans_arr[0])
+        returnDict["result"].append(ans_arr[1])
+
+    return returnDict
 
 def readSignal(path1, path2):
 

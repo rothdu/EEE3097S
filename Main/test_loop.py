@@ -8,7 +8,7 @@ import time
 plotSize = (640, 480)
 samplingPeriod = 1
 
-micPositions = [[0, 0.5], [0.8, 0.5], [0, 0]]
+micPositions = [[0.8, 0.0], [0.0, 0.0], [0.8, 0.5]]
 
 rpi1_fin_path = "Main/rpi1_finnished.txt"
 rpi2_fin_path = "Main/rpi2_finnished.txt"
@@ -25,7 +25,7 @@ mode = "continuous"
 def runTest(startTime):
     next_byte.inform_ready(rpi1_ip, "rpi1")
     if (next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)):
-        result = loc.localize(rpi1_byte_path,
+        result = loc.localizeTest(rpi1_byte_path,
                                 rpi2_byte_path, micPositions, startTime,
                                 hyperbola=True, refTDOA=True)
 
@@ -43,28 +43,28 @@ def runTest(startTime):
 
 
 def nTests(n, fileName):
-    outFile = open("tests/results/" + fileName + ".csv", "a", encoding="utf-8")
+    outFile = open("Main/test/results/" + fileName + ".csv", "a", encoding="utf-8")
 
     while True:
         try:
             header = input("Test Header: ")
             x = promptForFloat("Enter position x: ")
             y = promptForFloat("Enter position y: ")
+            input("Press enter to start")
 
             outFile.write("#" + "\n")
             outFile.write(header + "\n")
             outFile.write(str(x) + "," + str(y) + "\n")
 
             for i in range(n):
-                
-                input("Click enter to start next test")
 
                 result = runTest(time.time())
 
-                if len(result['result'] != 0):
+                if len(result['result']) != 0:
 
                     outFile.write(str(result["tdoa"][0]) + "," + str(result["tdoa"][1]) + "," + str(result["result"][0]) + "," + str(result["result"][1]) + "\n")
                 else:
+
                     outFile.write(result["errorMessage"][0] + "\n")
         except KeyboardInterrupt:
             print("Ending testing loop")
@@ -72,18 +72,16 @@ def nTests(n, fileName):
 
 
 def contTests(fileName):
-    outFile = open("tests/results/" + fileName + ".csv", "w", encoding="utf-8")
+    outFile = open("Main/test/results/" + fileName + ".csv", "w", encoding="utf-8")
 
     while True:
         try:
-        
-            input("Click enter to start next test")
 
             result = runTest(time.time())
 
             updateTime = time.time() - result['times'][0]
 
-            if len(result['result'] != 0):
+            if len(result['result']) != 0:
 
                 outFile.write(str(result["tdoa"][0]) + "," + str(result["tdoa"][1]) + "," + str(result["result"][0]) + "," + str(result["result"][1]) + "," + str(updateTime) + "\n" )
             else:
@@ -121,8 +119,6 @@ def main():
         2: Run tests continuously until prompted to stop, output to txt\n\
         q: Quit\
         "
-
-    print(welcomeString)
     
     
     while (True):

@@ -23,7 +23,7 @@ import subsystems
 plotSize = (640, 480)
 samplingPeriod = 1
 
-micPositions = [[0, 0.5], [0.8, 0.5], [0, 0]]
+micPositions = [[0.8, 0.0], [0.0, 0.0], [0.8, 0.5]]
 
 rpi1_fin_path = "Main/rpi1_finnished.txt"
 rpi2_fin_path = "Main/rpi2_finnished.txt"

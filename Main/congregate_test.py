@@ -106,7 +106,7 @@ def actTDOA(x,y,micPos):
 
 def main():
     
-    congregateNoNoise("Main\dummydata.txt",3,5,9,[[0,0],[0.8,0],[0,0.5]])
+    congregateNoNoise("Main/test/results/1.csv",1,2,3,[[0,0.8],[0,0],[0.8,0.5]])
 
 
 if  __name__ == "__main__":
