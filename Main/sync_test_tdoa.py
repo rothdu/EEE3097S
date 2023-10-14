@@ -4,33 +4,20 @@ import os
 from scipy.io import wavfile
 import gcc_phat
 from scipy import signal
+import localize as loc
 
 def tdoa(path1, path2,):
-    SR, rpi1_chan_1, rpi2_chan_1 = readSignal(
+    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = loc.readSignal(
         path1, path2)
 
-    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = processSignal(
-        rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2)
-
-    max_tau = 0.01
+    rpi1_chan_1, rpi2_chan_1 = processSignal(
+        rpi1_chan_1, rpi2_chan_1)
 
     # tdoa rpi1
     tdoa = gcc_phat.gcc_phat(
-        rpi1_chan_1, rpi2_chan_2, SR, max_tau)  # top left mic
+        rpi1_chan_1, rpi2_chan_1, SR)  # top left mic
 
     return tdoa
-
-def readSignal(path1, path2):
-
-    # Import Wav files
-    SR, rpi1 = wavfile.read(path1)
-    SR, rpi2 = wavfile.read(path2)
-
-    # Separate into channels
-    rpi1_chan_1 = rpi1[:, 0]
-    rpi2_chan_1 = rpi2[:, 0]
-
-    return SR, rpi1_chan_1, rpi2_chan_1
 
 
 def processSignal(rpi1_chan_1, rpi2_chan_1):
@@ -77,12 +64,15 @@ def test(max,rpi1_fin_path, rpi2_fin_path, rpi1_wav,rpi2_wav):
     results = []
 
     for i in range(0,max):
-        next_byte.inform_ready("192.168.137.99", "rpi1")
-        found = False
-        while not found:
-            found = next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
-        tdoa = tdoa(rpi1_wav,rpi2_wav)
-        results.append(tdoa)
+        res = 0
+        while res < 0.00001:
+            next_byte.inform_ready("192.168.137.99", "rpi1")
+            found = False
+            while not found:
+                found = next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
+            res = tdoa(rpi1_wav,rpi2_wav)
+            res = abs(res)
+        results.append(res)
 
     ave = sum(results)/len(results)
     results.append("###")

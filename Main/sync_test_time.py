@@ -8,6 +8,7 @@ def test(rpi1_ip,rpi1_fin_path,rpi2_fin_path,max):
         next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
 
         time1, time2, diff = next_byte.find_delay()
+        diff = abs(diff)
         results.append(diff)
     ave = sum(results)/len(results)
     results.append("###")
