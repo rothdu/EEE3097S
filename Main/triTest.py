@@ -9,13 +9,15 @@ def triangulationTest(pos, passPos, micPos):
     column1 = []
     column2 = []
     column3 = []
+    column4 = []
+
     maxDIS = np.sqrt((0.8**2)+(0.5**2))
 
     for p in pos:
 
-        d1 = np.sqrt((p[0]-micPos[0][0])**2+(p[0]-micPos[0][1])**2)
-        d2 = np.sqrt((p[0]-micPos[1][0])**2+(p[0]-micPos[1][1])**2)
-        d3 = np.sqrt((p[0]-micPos[2][0])**2+(p[0]-micPos[2][1])**2)
+        d1 = np.sqrt((p[0]-micPos[0][0])**2+(p[1]-micPos[0][1])**2)
+        d2 = np.sqrt((p[0]-micPos[1][0])**2+(p[1]-micPos[1][1])**2)
+        d3 = np.sqrt((p[0]-micPos[2][0])**2+(p[1]-micPos[2][1])**2)
 
         actualTdoa_rpi1 = (d1 - d2)/constant.speed_of_sound
         actualTdoa_rpi2 = (d1 - d3)/constant.speed_of_sound
@@ -37,14 +39,17 @@ def triangulationTest(pos, passPos, micPos):
         
         errorPOS = (np.sqrt((p[0]-ans_arr[0])**2+(p[1]-ans_arr[1])**2)/maxDIS)*100
 
+        column3.append(errorPOS)
+
         if abs(errorPOS) > passPos:
-            column3.append("Fail")
+            column4.append("Fail")
         else:
-            column3.append("Pass")
+            column4.append("Pass")
 
     data["Test Pos"] = np.array(column1)
     data["Estimated Pos"] = np.array(column2)
-    data["Pass/Fail"] = np.array(column3)    
+    data["Percentage Error"] = np.array(column3)    
+    data["Pass/Fail"] = np.array(column4)    
 
     data.to_excel("Main/triTest.xlsx")
 
