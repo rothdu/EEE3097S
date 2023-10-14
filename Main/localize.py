@@ -9,6 +9,8 @@ from scipy import signal
 from scipy.optimize import least_squares
 
 
+warnings.filterwarnings("error")
+
 def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
 
     returnDict = {
@@ -57,13 +59,14 @@ def localize(path1, path2, micPos, startTime, hyperbola=False, refTDOA=False):
                 (tdoa_rpi2*constant.speed_of_sound)
             return [e1, e2]
         
-        ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
+        try:
+            ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
 
-        if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
-            Valid = False
-            returnDict["errorMessage"].append("Triangluation produced a value outside of the grid")
+            if (ans_arr[0] < 0 or ans_arr[0] > 0.8 or ans_arr[1] < 0 or ans_arr[1] > 0.5):
+                Valid = False
+                returnDict["errorMessage"].append("Triangluation produced a value outside of the grid")
 
-        with warnings.catch_warnings(record=True) as w:
+        except RuntimeWarning:
             Valid = False
             returnDict["errorMessage"].append("Triangluation failed to find an intersection")
 
