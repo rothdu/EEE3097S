@@ -43,26 +43,32 @@ def runTest(startTime):
 
 
 def nTests(n, fileName):
-    outFile = open("tests/results/" + fileName + ".csv", "w", encoding="utf-8")
-    header = input("Test Header: ")
-    x = promptForFloat("Enter position x: ")
-    y = promptForFloat("Enter position y: ")
+    outFile = open("tests/results/" + fileName + ".csv", "a", encoding="utf-8")
 
-    outFile.write("#" + "\n")
-    outFile.write(header + "\n")
-    outFile.write(str(x) + "," + str(y) + "\n")
+    while True:
+        try:
+            header = input("Test Header: ")
+            x = promptForFloat("Enter position x: ")
+            y = promptForFloat("Enter position y: ")
 
-    for i in range(n):
-        
-        input("Click enter to start next test")
+            outFile.write("#" + "\n")
+            outFile.write(header + "\n")
+            outFile.write(str(x) + "," + str(y) + "\n")
 
-        result = runTest(time.time())
+            for i in range(n):
+                
+                input("Click enter to start next test")
 
-        if len(result['result'] != 0):
+                result = runTest(time.time())
 
-            outFile.write(str(result["tdoa"][0]) + "," + str(result["tdoa"][1]) + "," + str(result["result"][0]) + "," + str(result["result"][1]) + "\n")
-        else:
-            outFile.write(result["errorMessage"][0] + "\n") 
+                if len(result['result'] != 0):
+
+                    outFile.write(str(result["tdoa"][0]) + "," + str(result["tdoa"][1]) + "," + str(result["result"][0]) + "," + str(result["result"][1]) + "\n")
+                else:
+                    outFile.write(result["errorMessage"][0] + "\n")
+        except KeyboardInterrupt:
+            print("Ending testing loop")
+            break 
 
 
 def contTests(fileName):
