@@ -5,23 +5,7 @@ import os
 from scipy import signal
 import matplotlib.pyplot as plt
 import localize as loc
-
-
-def get_signal():
-    rpi1_fin_path = "Main/rpi1_finnished.txt"
-    rpi2_fin_path = "Main/rpi2_finnished.txt"
-    rpi1_wav = "Main/bytes/rpi1_next_byte.wav"
-    rpi2_wav = "Main/bytes/rpi2_next_byte.wav"
-
-    next_byte.inform_ready("192.168.137.99", "rpi1")
-    found = False
-    while not found:
-        found = next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
-    
-    SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = readSignal(
-        rpi1_wav, rpi2_wav)
-    
-    return rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2
+import matplotlib.gridspec as gridspec
     
 def similarity(actual,recorded):
     # Calculate the correlation coefficient
@@ -52,26 +36,61 @@ def actual_to_array(actual_file):
     return array
 
 
-def test_corr(test_file):
-    rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = get_signal()
+def test_corr(test_file,state, figure_name, figure_save):
+    rpi1_wav = "Main/bytes/aqu_sound_1.wav"
+    rpi2_wav = "Main/bytes/aqu_sound_2.wav"
+
     actual = actual_to_array(test_file)
-    recorded = [rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2]
-
-    results = []
-    for rec in recorded:
-        rec = rec[:len(actual)]
-        corr = similarity(actual,rec)
-        results.append(corr)
+    results = loc.signalAquisitionTest(rpi1_wav, rpi2_wav)
     
-    ave = sum(results)/len(results)
-    results.append("###")
-    results.append(ave)
+    for i in range(0,4):
+        results[state][i] = results[state][i][:600000]
 
-    return results
+    # Create a figure with a grid of subplots
+    fig = plt.figure(figsize=(8, 6))
+    fig.suptitle(figure_name)
+
+    # Define the grid using gridspec
+    gs = gridspec.GridSpec(3, 2, width_ratios=[1, 1], height_ratios=[1, 1, 2])
+
+    # Subplots in the first row
+    ax1 = plt.subplot(gs[0, 0])
+    ax2 = plt.subplot(gs[0, 1])
+
+    # Subplots in the second row
+    ax3 = plt.subplot(gs[1, 0])
+    ax4 = plt.subplot(gs[1, 1])
+
+    # Subplot spanning the entire third row
+    ax5 = plt.subplot(gs[2, :])
+
+    # Now, you can plot in each of the subplots as needed
+    ax1.plot(results[state][2],color="b")
+    ax1.set_title('PI 1 Channel 1')
+
+    ax2.plot(results[state][1],color="g")
+    ax2.set_title('PI 1 Channel 1')
+
+    ax3.plot(results[state][2], color="r")
+    ax3.set_title('PI 2 Channel 1')
+
+    ax4.plot(results[state][3], color="m")
+    ax4.set_title('PI 2 Channel 2')
+
+    ax5.plot(actual, color="y")
+    ax5.set_title('Source Signal')
+
+    # Adjust spacing between subplots
+    plt.tight_layout()
+
+    # Show the figure
+    plt.savefig(figure_save, format='jpg')
+    plt.show()
+    plt.close()
 
 def test_size():
-    rpi1_wav = "Main/bytes/rpi1_next_byte.wav"
-    rpi2_wav = "Main/bytes/rpi2_next_byte.wav"
+    rpi1_wav = "Main/bytes/aqu_sound_1.wav"
+    rpi2_wav = "Main/bytes/aqu_sound_2.wav"
     
     SR, rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2 = readSignal(
         rpi1_wav, rpi2_wav)
@@ -123,10 +142,7 @@ def processSignal(rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2):
     return rpi1_chan_1, rpi1_chan_2, rpi2_chan_1, rpi2_chan_2
 
 
-def test_filter(rpi1_ip,rpi1_fin_path, rpi2_fin_path,rpi1_wav, rpi2_wav):
-
-    # next_byte.inform_ready(rpi1_ip, "rpi1")
-    # next_byte.wait_trans(rpi1_fin_path, rpi2_fin_path)
+def test_filter(rpi1_wav, rpi2_wav):
 
     results = loc.signalAquisitionTest(rpi1_wav, rpi2_wav)
 
@@ -134,8 +150,12 @@ def test_filter(rpi1_ip,rpi1_fin_path, rpi2_fin_path,rpi1_wav, rpi2_wav):
     fig, axes = plt.subplots(2, 2)
     plt.suptitle("Original Signals", fontsize=16)
 
+    # for i in range(0,4):
+    #     results["original"][i] = results["original"][i][100000:500000]
+    #     results["processed"][i] = results["processed"][i][100000:500000]
+
     # can add additional plotting here
-    axes[0][0].plot(results["original"][0], color="b")
+    axes[0][0].plot(results["original"][2], color="b")
     axes[0][1].plot(results["original"][1], color="g")
     axes[1][0].plot(results["original"][2], color="r")
     axes[1][1].plot(results["original"][3], color="m")
@@ -148,7 +168,7 @@ def test_filter(rpi1_ip,rpi1_fin_path, rpi2_fin_path,rpi1_wav, rpi2_wav):
     plt.suptitle("Filtered Signals", fontsize=16)
 
     # can add additional plotting here
-    axes[0][0].plot(results["processed"][0], color="b")
+    axes[0][0].plot(results["processed"][2], color="b")
     axes[0][1].plot(results["processed"][1], color="g")
     axes[1][0].plot(results["processed"][2], color="r")
     axes[1][1].plot(results["processed"][3], color="m")
@@ -165,15 +185,13 @@ def write_to_file(contents,file_name):
             file.write(str(item) + "\n")
 
 def main():
-    rpi1_fin_path = "Main/rpi1_finnished.txt"
-    rpi2_fin_path = "Main/rpi2_finnished.txt"
     rpi1_wav = "Main/bytes/rpi1_next_byte.wav"
     rpi2_wav = "Main/bytes/rpi2_next_byte.wav"
 
-    # results = test_corr("test.wav")
-    # write_to_file(results,"Main/results/signal_aqu_corr.txt")
+    test_corr("Main/bytes/test.wav","processed", "Filtered Recordings","Main/results/filtered_in_out.jpg")
+    test_corr("Main/bytes/test.wav","original", "Original Recordings","Main/results/original_in_out.jpg")
     
-    test_filter("192.168.137.99",rpi1_fin_path, rpi2_fin_path,rpi1_wav, rpi2_wav)
+    test_filter(rpi1_wav, rpi2_wav)
 
     print(test_size())
 
