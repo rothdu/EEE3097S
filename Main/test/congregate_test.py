@@ -56,7 +56,6 @@ def congregate(path, outPath1, outPath2, passTDOA, passPOS, passrate, micPos):
                     avg = sum/posPassCount
                     column3.append("Pass")
                     column3.append(round(avg,2))
-                print(column3)    
 
                 data1[heading] = np.array(column1)
                 data1[str(count)] = np.array(column2)
