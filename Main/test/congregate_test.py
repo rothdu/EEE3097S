@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 import scipy.constants as constant
+import matplotlib.pyplot as plt
 # Reads a text file and collects all the data and stores it in an excel file.
 
-def congregateNoNoise(path, passTDOA, passPOS, passrate, micPos):
+def congregate(path, outPath1, outPath2, passTDOA, passPOS, passrate, micPos):
 
     f = open(path,"r")    
     g = f.readlines()
@@ -58,6 +59,9 @@ def congregateNoNoise(path, passTDOA, passPOS, passrate, micPos):
                 column1 = []
                 column2 = []
                 column3 = []
+                tdoaPassCount1 = 0
+                tdoaPassCount2 = 0
+                posPassCount = 0
 
         elif a != '#' and lineLen == 1:
             heading = a
@@ -69,7 +73,7 @@ def congregateNoNoise(path, passTDOA, passPOS, passrate, micPos):
 
         elif lineLen == 4:
             errorTDOA1 = ((actualTdoa_rpi1-float(line[0]))/maxTDOA)*100
-            errorTDOA2 = ((actualTdoa_rpi2-float(line[0]))/maxTDOA)*100
+            errorTDOA2 = ((actualTdoa_rpi2-float(line[1]))/maxTDOA)*100
             errorPOS = (np.sqrt((x-float(line[2]))**2+(y-float(line[3]))**2)/maxDIS)*100
 
             if abs(errorTDOA1) <= passTDOA:  tdoaPassCount1 += 1
@@ -90,9 +94,9 @@ def congregateNoNoise(path, passTDOA, passPOS, passrate, micPos):
     data1.insert(0,"Test No.",column0)
     data2.insert(0,"Test No.",column0)
 
-    data1.to_excel("Main/output1.xlsx")
-    data2.to_excel("Main/output2.xlsx")
-
+    data1.to_excel(outPath1)
+    data2.to_excel(outPath2)
+  
 
 def actTDOA(x,y,micPos):
     d1 = np.sqrt((x-micPos[0][0])**2+(y-micPos[0][1])**2)
@@ -106,8 +110,9 @@ def actTDOA(x,y,micPos):
 
 def main():
     
-    congregateNoNoise("Main/test/results/positions.csv",1,2,9,[[0,0.8],[0,0],[0.8,0.5]])
-
+    congregate("Main/test/results/positions.csv","Main/test/results/positionsTDOA.xlsx","Main/test/results/positionsPOS.xlsx",5,5,7,[[0.8,0],[0,0],[0.8,0.5]])
+    congregate("Main/test/results/sounds.csv","Main/test/results/soundsTDOA.xlsx","Main/test/results/soundsPOS.xlsx",5,5,7,[[0.8,0],[0,0],[0.8,0.5]])
+    congregate("Main/test/results/noise.csv","Main/test/results/noiseTDOA.xlsx","Main/test/results/noisePOS.xlsx",5,5,7,[[0.8,0],[0,0],[0.8,0.5]])
 
 if  __name__ == "__main__":
     main()

@@ -49,7 +49,7 @@ def triangulationTest(pos, passPos, micPos):
     data["Percentage Error"] = np.array(column3)    
     data["Pass/Fail"] = np.array(column4)    
 
-    data.to_excel("Main/triTest.xlsx")
+    data.to_excel("Main/test/results/triTest.xlsx")
 
 def main():
     triangulationTest([[0.1,0.1],[0.3,0.1],[0.5,0.1],[0.7,0.1],[0.1,0.2],[0.3,0.2],[0.5,0.2],[0.7,0.2],[0.1,0.3],[0.3,0.3],[0.5,0.3],[0.7,0.3],[0.1,0.4],[0.3,0.4],[0.5,0.4],[0.7,0.4]],5,[[0.8,0],[0,0],[0.8,0.5]])
