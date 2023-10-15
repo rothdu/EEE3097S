@@ -5,7 +5,7 @@ x = []
 y = []
 time = 0
 
-f = open("Main/test/results/realtime.csv","r")    
+f = open("Main/test/results/realtimecat.csv","r")    
 g = f.readlines()
 
 fileLen = len(g)
