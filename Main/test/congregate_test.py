@@ -48,8 +48,15 @@ def congregate(path, outPath1, outPath2, passTDOA, passPOS, passrate, micPos):
 
                 if posPassCount < passrate:
                     column3.append("Fail")
+                    column3.append("N/A")
                 else:
+                    sum = 0
+                    for i in column3:
+                        if abs(i) <= passPOS:  sum += i
+                    avg = sum/posPassCount
                     column3.append("Pass")
+                    column3.append(round(avg,2))
+                print(column3)    
 
                 data1[heading] = np.array(column1)
                 data1[str(count)] = np.array(column2)
@@ -80,19 +87,19 @@ def congregate(path, outPath1, outPath2, passTDOA, passPOS, passrate, micPos):
             if abs(errorTDOA2) <= passTDOA:  tdoaPassCount2 += 1
             if abs(errorPOS) <= passPOS:  posPassCount += 1
 
-            column1.append(errorTDOA1)
-            column2.append(errorTDOA2)
-            column3.append(errorPOS)
+            column1.append(round(errorTDOA1,2))
+            column2.append(round(errorTDOA2,2))
+            column3.append(round(errorPOS,2))
 
         else:
             print("invalid Textfile line")
             exit(1)
 
-    column0 = np.arange(1,len(data1.index),dtype=object)
-    column0 = np.append(column0,"P/F")
+    column01 = np.array([1,2,3,4,5,6,7,8,9,10,"P/F"])
+    column02 = np.array([1,2,3,4,5,6,7,8,9,10,"P/F","AVG"])
 
-    data1.insert(0,"Test No.",column0)
-    data2.insert(0,"Test No.",column0)
+    data1.insert(0,"Test No.",column01)
+    data2.insert(0,"Test No.",column02)
 
     data1.to_excel(outPath1)
     data2.to_excel(outPath2)
@@ -110,11 +117,11 @@ def actTDOA(x,y,micPos):
 
 def main():
     
-    # congregate("Main/test/results/positions.csv","Main/test/results/positionsTDOA.xlsx","Main/test/results/positionsPOS.xlsx",5,5,7,[[0.8,0],[0,0],[0.8,0.5]])
-    # congregate("Main/test/results/sounds.csv","Main/test/results/soundsTDOA.xlsx","Main/test/results/soundsPOS.xlsx",5,5,7,[[0.8,0],[0,0],[0.8,0.5]])
-    # congregate("Main/test/results/noise.csv","Main/test/results/noiseTDOA.xlsx","Main/test/results/noisePOS.xlsx",5,5,7,[[0.8,0],[0,0],[0.8,0.5]])
+    congregate("Main/test/results/positions.csv","Main/test/results/positionsTDOA.xlsx","Main/test/results/positionsPOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
+    congregate("Main/test/results/sounds.csv","Main/test/results/soundsTDOA.xlsx","Main/test/results/soundsPOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
+    congregate("Main/test/results/noise.csv","Main/test/results/noiseTDOA.xlsx","Main/test/results/noisePOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
 
-    congregate("Main/test/results/positionscat.csv","Main/test/results/positionscatTDOA.xlsx","Main/test/results/positionscatPOS.xlsx",5,5,7,[[0.8,0],[0,0],[0.8,0.5]])
+    congregate("Main/test/results/positionscat.csv","Main/test/results/positionscatTDOA.xlsx","Main/test/results/positionscatPOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
 
 
 if  __name__ == "__main__":
