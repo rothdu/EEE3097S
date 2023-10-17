@@ -33,7 +33,7 @@ def triangulationTest(pos, passPos, micPos):
         ans_arr = scipy.optimize.fsolve(function, (0.4, 0.25))
 
         column1.append(str(p[0]) + "," + str(p[1]))
-        column2.append("{:.3f}".format(ans_arr[0]) + "," + "{:.3f}".format(ans_arr[1]))
+        column2.append(str(ans_arr[0]) + "," + str(ans_arr[1]))
         
         errorPOS = (np.sqrt((p[0]-ans_arr[0])**2+(p[1]-ans_arr[1])**2)/maxDIS)*100
 

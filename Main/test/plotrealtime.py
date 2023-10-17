@@ -20,13 +20,13 @@ for a in g:
     y.append(float(line[3]))
 
 print(time/len(g))
-
+print(len(g))
 # Plotting the x and y values
 plt.scatter(x, y, marker='o')  # 'o' for circles at data points
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.title('Plot of X and Y values')
-plt.xlim(0, 0.8)  # Limit x-axis from 0 to 6
-plt.ylim(0, 0.5)  # Limit y-axis from 0 to 25
+plt.title('Estimated Path Taken by Sound Source')
+# plt.xlim(0, 0.8)  # Limit x-axis from 0 to 6
+# plt.ylim(0, 0.5)  # Limit y-axis from 0 to 25
 plt.grid(True)  # Add gridlines for better visibility
 plt.show()

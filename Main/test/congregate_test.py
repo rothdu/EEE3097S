@@ -116,11 +116,11 @@ def actTDOA(x,y,micPos):
 
 def main():
     
-    congregate("Main/test/results/positions.csv","Main/test/results/positionsTDOA.xlsx","Main/test/results/positionsPOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
-    congregate("Main/test/results/sounds.csv","Main/test/results/soundsTDOA.xlsx","Main/test/results/soundsPOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
-    congregate("Main/test/results/noise.csv","Main/test/results/noiseTDOA.xlsx","Main/test/results/noisePOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
+    congregate("Main/test/results/positions.csv","Main/test/results/positionsTDOA.xlsx","Main/test/results/positionsPOS.xlsx",10,10,6,[[0.8,0],[0,0],[0.8,0.5]])
+    # congregate("Main/test/results/sounds.csv","Main/test/results/soundsTDOA.xlsx","Main/test/results/soundsPOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
+    # congregate("Main/test/results/noise.csv","Main/test/results/noiseTDOA.xlsx","Main/test/results/noisePOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
 
-    congregate("Main/test/results/positionscat.csv","Main/test/results/positionscatTDOA.xlsx","Main/test/results/positionscatPOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
+    # congregate("Main/test/results/positionscat.csv","Main/test/results/positionscatTDOA.xlsx","Main/test/results/positionscatPOS.xlsx",10,10,8,[[0.8,0],[0,0],[0.8,0.5]])
 
 
 if  __name__ == "__main__":
